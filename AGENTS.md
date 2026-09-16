@@ -2,7 +2,7 @@
 
 ## Core invariant
 
-Aether is a **source code scaffolding** tool, not a runtime framework. The generated application runs without Aether installed. No template under `templates/` may add `aether` or `aether-cli` to `dependencies` or dependency-like fields in the generated `package.json`.
+Aether is a **source code scaffolding** tool, not a runtime framework. The generated application runs without Aether installed. No template under `templates/` may add `aether`, `aether-cli`, or `@malyuga/aether-cli` to `dependencies` or dependency-like fields in the generated `package.json`.
 
 ## Commands
 

@@ -1,5 +1,5 @@
 {
-  "name": "aether-cli",
+  "name": "@malyuga/aether-cli",
   "version": "0.1.0",
   "description": "CLI for scaffolding Node.js HTTP backends in TypeScript",
   "keywords": [
