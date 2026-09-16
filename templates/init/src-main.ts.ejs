@@ -3,6 +3,7 @@ import { createApp } from "./app";
 
 const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? "0.0.0.0";
+const shutdownGraceMs = 10_000;
 
 const listener = createApp();
 const server = createServer(listener);
@@ -10,3 +11,29 @@ const server = createServer(listener);
 server.listen(port, host, () => {
   console.log(`Server listening on http://${host}:${port}`);
 });
+
+let shuttingDown = false;
+
+function shutdown(signal: string): void {
+  if (shuttingDown) {
+    return;
+  }
+  shuttingDown = true;
+  console.log(`Received ${signal}, shutting down...`);
+
+  const forceTimer = setTimeout(() => {
+    server.closeAllConnections();
+  }, shutdownGraceMs);
+  forceTimer.unref();
+
+  server.close((err) => {
+    clearTimeout(forceTimer);
+    if (err) {
+      console.error(err);
+      process.exitCode = 1;
+    }
+  });
+}
+
+process.once("SIGINT", () => shutdown("SIGINT"));
+process.once("SIGTERM", () => shutdown("SIGTERM"));

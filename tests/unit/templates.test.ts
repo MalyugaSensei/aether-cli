@@ -15,6 +15,15 @@ describe("templates", () => {
     expect(pkg.scripts?.build).toBe("tsc");
   });
 
+  it("R-init-05: init main.ts handles graceful shutdown", async () => {
+    const src = await renderTemplate("init/src-main.ts.ejs", { projectName: "demo" });
+    expect(src).toContain('process.once("SIGINT"');
+    expect(src).toContain('process.once("SIGTERM"');
+    expect(src).toContain("server.close(");
+    expect(src).toContain("closeAllConnections()");
+    expect(src).toMatch(/10_?000/);
+  });
+
   it("init tsconfig uses NodeNext and types node", async () => {
     const json = await renderTemplate("init/tsconfig.json.ejs", { projectName: "demo" });
     const tsconfig = JSON.parse(json) as { compilerOptions: Record<string, unknown> };

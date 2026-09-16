@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { afterAll, describe, expect, it } from "vitest";
@@ -33,6 +34,15 @@ function waitForServer(port: number, timeoutMs = 15_000): Promise<void> {
     };
     tick();
   });
+}
+
+function waitForProcessExit(
+  child: ReturnType<typeof spawn>,
+  timeoutMs = 15_000,
+): Promise<number> {
+  return once(child as unknown as NodeJS.EventEmitter, "exit", {
+    signal: AbortSignal.timeout(timeoutMs),
+  }).then(([code]) => (code as number | null) ?? 1);
 }
 
 describe("integration: init + crud resource", () => {
@@ -106,8 +116,25 @@ describe("integration: init + crud resource", () => {
       const missing = await fetch(`http://127.0.0.1:${port}/users/${entity.id}`);
       expect(missing.status).toBe(404);
     } finally {
+      const exitPromise = waitForProcessExit(child);
       child.kill("SIGTERM");
+      await exitPromise;
     }
+  });
+
+  it("R-init-05: graceful shutdown exits with code 0 after SIGTERM", async () => {
+    const port = 40_000 + Math.floor(Math.random() * 10_000);
+    const child = spawn(process.execPath, [tsxCli, "src/main.ts"], {
+      cwd: dir,
+      env: { ...process.env, PORT: String(port), HOST: "127.0.0.1" },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    await waitForServer(port);
+
+    const exitPromise = waitForProcessExit(child);
+    child.kill("SIGTERM");
+    expect(await exitPromise).toBe(0);
   });
 
   it("R-middleware-02: middleware registration is idempotent", async () => {
