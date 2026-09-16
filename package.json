@@ -34,11 +34,12 @@
   },
   "scripts": {
     "build": "tsc && node scripts/copy-templates.mjs",
+    "pretest": "npm run build",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "vitest run tests/integration/e2e-install.test.ts",
-    "prepublishOnly": "npm test && npm run build"
+    "prepublishOnly": "npm test"
   },
   "engines": {
     "node": ">=20"
