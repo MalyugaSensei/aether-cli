@@ -23,7 +23,7 @@
   "homepage": "https://github.com/MalyugaSensei/chisel-js#readme",
   "type": "module",
   "bin": {
-    "chisel": "./dist/cli.js"
+    "chisel": "dist/cli.js"
   },
   "files": [
     "dist"
