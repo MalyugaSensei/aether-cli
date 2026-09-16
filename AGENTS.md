@@ -38,4 +38,4 @@ Behavior changes without updating the spec in the same change are not accepted.
 ## Documentation
 
 - `AGENTS.md` and `specs/` are for CLI development; they are not published in the npm package (`files: ["dist"]`).
-- Do not add `README.md` in the repository.
+- `README.md` is the npm listing. Keep it short.

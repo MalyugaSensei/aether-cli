@@ -1,7 +1,26 @@
 {
-  "name": "chisel",
+  "name": "chisel-js",
   "version": "0.1.0",
-  "description": "CLI for generating Node.js backend source code",
+  "description": "CLI for scaffolding Node.js HTTP backends in TypeScript",
+  "keywords": [
+    "cli",
+    "scaffold",
+    "generator",
+    "nodejs",
+    "typescript",
+    "http",
+    "backend"
+  ],
+  "license": "MIT",
+  "author": "MalyugaSensei",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MalyugaSensei/chisel-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MalyugaSensei/chisel-js/issues"
+  },
+  "homepage": "https://github.com/MalyugaSensei/chisel-js#readme",
   "type": "module",
   "bin": {
     "chisel": "./dist/cli.js"
@@ -9,12 +28,17 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc && node scripts/copy-templates.mjs",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "vitest run tests/integration/e2e-install.test.ts"
+    "test:e2e": "vitest run tests/integration/e2e-install.test.ts",
+    "prepublishOnly": "npm test && npm run build"
   },
   "engines": {
     "node": ">=20"

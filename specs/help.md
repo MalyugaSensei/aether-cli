@@ -21,4 +21,4 @@
 
 ## Out of scope
 
-- README in repository root; man pages.
+- man pages. User-facing `README.md` is the npm listing, not this command.
