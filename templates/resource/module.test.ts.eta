@@ -1,0 +1,11 @@
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { create<%= it.entityPascal %>Module } from "../src/<%= it.resourceKebab %>/<%= it.resourceKebab %>.module";
+import { createFake<%= it.entityPascal %>Repository } from "./<%= it.resourceKebab %>.repository.fake";
+
+describe("<%= it.resourceKebab %> module", () => {
+  it("lists created items when repository is wired", () => {
+    const mod = create<%= it.entityPascal %>Module({ repository: createFake<%= it.entityPascal %>Repository() });
+    assert.equal(mod.routes.length, 5);
+  });
+});

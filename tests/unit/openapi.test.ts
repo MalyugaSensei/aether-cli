@@ -16,7 +16,7 @@ describe("openapi", () => {
 
   it("R-openapi-02: extracts fields from POST schema", () => {
     const doc = loadOpenApiSpec(join(fixtures, "users.openapi.json"));
-    const resources = extractResources(doc);
+    const resources = extractResources(doc).resources;
     expect(resources).toHaveLength(1);
     expect(resources[0]?.name).toBe("users");
     expect(resources[0]?.fields).toEqual(
@@ -30,7 +30,7 @@ describe("openapi", () => {
 
   it("R-openapi-04: skips collections without item path or POST schema", () => {
     const doc = loadOpenApiSpec(join(fixtures, "users.openapi.yaml"));
-    const resources = extractResources(doc);
+    const resources = extractResources(doc).resources;
     expect(resources).toHaveLength(1);
     expect(resources[0]?.fields).toEqual([{ name: "name", tsType: "string", required: true }]);
 
@@ -54,6 +54,23 @@ describe("openapi", () => {
         },
       },
     };
-    expect(extractResources(noItem)).toHaveLength(0);
+    expect(extractResources(noItem).resources).toHaveLength(0);
+  });
+
+  it("R-openapi-07: POST schema via component ref", () => {
+    const doc = loadOpenApiSpec(join(fixtures, "users-ref.openapi.json"));
+    const resources = extractResources(doc).resources;
+    expect(resources[0]?.fields).toEqual(
+      expect.arrayContaining([
+        { name: "name", tsType: "string", required: true },
+        { name: "role", tsType: "string", required: false },
+      ]),
+    );
+  });
+
+  it("R-openapi-08: multi-resource spec", () => {
+    const doc = loadOpenApiSpec(join(fixtures, "multi.openapi.json"));
+    const { resources } = extractResources(doc);
+    expect(resources.map((r) => r.name).sort()).toEqual(["orders", "users"]);
   });
 });

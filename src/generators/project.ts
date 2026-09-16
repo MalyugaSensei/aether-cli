@@ -32,6 +32,7 @@ export const projectGenerator: Generator<InitOptions & { targetRoot: string }> =
       { rel: "chisel.config.json", template: "init/chisel.config.json.eta" },
       { rel: ".env.example", template: "init/env.example.eta" },
       { rel: "src/main.ts", template: "init/src-main.ts.eta" },
+      { rel: "src/app/composition.ts", template: "init/src-app-composition.ts.eta" },
       { rel: "src/app.ts", template: "init/src-app.ts.eta" },
       { rel: "src/app/config.ts", template: "init/src-app-config.ts.eta" },
       { rel: "src/app/server.ts", template: "init/src-app-server.ts.eta" },

@@ -1,8 +1,10 @@
-import { mkdtempSync, existsSync, readFileSync } from "node:fs";
+import { mkdtempSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { commitPlan, type FileOp } from "../../src/core/plan.js";
+import { Project } from "ts-morph";
+import { appendToArrayLiteralIfMissing } from "../../src/core/ast.js";
+import { commitPlan, materializePlan, type FileOp } from "../../src/core/plan.js";
 
 describe("plan", () => {
   it("R-init-01 dry-run does not write files", async () => {
@@ -17,5 +19,22 @@ describe("plan", () => {
     const ops: FileOp[] = [{ kind: "create", path: "foo.txt", contents: "bar\n" }];
     await commitPlan(dir, ops, {});
     expect(readFileSync(join(dir, "foo.txt"), "utf8")).toContain("bar");
+  });
+
+  it("R-plan-02: failed modify does not leave prior creates behind", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "chisel-rollback-"));
+    writeFileSync(join(dir, "app.ts"), "const routes: string[] = [];\n");
+    const ops: FileOp[] = [
+      { kind: "create", path: "new.txt", contents: "x" },
+      {
+        kind: "modify",
+        path: "app.ts",
+        edit(sf) {
+          appendToArrayLiteralIfMissing(sf, "missingArray", "x", false);
+        },
+      },
+    ];
+    await expect(materializePlan(dir, ops)).rejects.toThrow();
+    expect(existsSync(join(dir, "new.txt"))).toBe(false);
   });
 });

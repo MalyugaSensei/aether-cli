@@ -3,7 +3,7 @@
 ## Command and flags
 
 - `chisel generate openapi <spec>` / `chisel g openapi <spec>`
-- `--force`, `--dry-run`
+- `--force`, `--dry-run`, `--strict`, `--only <names>` (comma-separated)
 
 ## Preconditions
 
@@ -12,17 +12,17 @@
 
 ## Behavior
 
-- Detect REST collections: path `/{resource}` plus `/{resource}/{id}` (path parameter **must** be named `id`).
-- Supported methods on collection: `GET` (list), `POST` (create).
-- Supported methods on item: `GET` (getById), `PATCH` or `PUT` (update), `DELETE` (remove).
-- Entity fields from `POST` `requestBody` `application/json` schema (`properties` + `required`). Always adds `id: string` on the entity type. Maps OpenAPI types: `string`, `number`, `integer`, `boolean`.
+- Detect REST collections: path `/{resource}` or `/{prefix}/{resource}` plus matching `.../{param}` item path (any `{param}` name).
+- Entity fields from `POST` `requestBody` `application/json` schema; merge optional fields from item `PATCH` or `PUT` body.
+- Maps OpenAPI types: `string`, `number`, `integer`, `boolean`, `enum` (as string).
 - Resolves `$ref` only when target is `#/components/schemas/{Name}`.
-- Skips paths that do not match the pattern; generates one resource module per valid collection (same output as `g resource <name> --crud` with derived fields).
+- Skipped paths are logged to stderr; with `--strict`, any skip fails the command.
+- `--only` filters generated resources by collection name.
 
 ## Created / modified files
 
 - Same as [resource](./resource.md) + [crud](./crud.md) per detected resource.
-- `src/app.ts`: register each resource’s routes (idempotent).
+- `src/app/composition.ts`: register each resource module (idempotent).
 
 ## Idempotency
 
@@ -32,9 +32,11 @@
 
 - R-openapi-01: parses JSON and YAML specs.
 - R-openapi-02: generates a CRUD resource with fields from the POST schema.
-- R-openapi-03: registers routes in `src/app.ts` without duplicates on a second spec with one resource.
-- R-openapi-04: rejects or skips collections that lack `{id}` item path or POST body schema.
+- R-openapi-03: second run without `--force` fails when resource directory exists.
+- R-openapi-04: skips collections that lack item path or POST body schema (or errors in `--strict`).
+- R-openapi-07: `$ref` to component schema resolves to fields.
+- R-openapi-08: multiple resources in one spec.
 
 ## Out of scope
 
-- OpenAPI code generation for arbitrary operations, security schemes, multipart, non-JSON bodies, `$ref` beyond component schemas.
+- OpenAPI code generation for arbitrary operations, security schemes, multipart, non-JSON bodies, external `$ref`, OpenAPI 3.1.

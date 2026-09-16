@@ -41,6 +41,7 @@ describe("templates", () => {
     const app = await renderTemplate("init/src-app.ts.eta", { projectName: "demo" });
     expect(app).toContain("handleRequestError");
     expect(app).toContain("catch (err)");
+    expect(app).toContain("buildAppRoutes");
   });
 
   it("init tsconfig uses NodeNext and types node", async () => {
@@ -74,38 +75,54 @@ describe("templates", () => {
     expect(configSrc).toContain('"10000"');
   });
 
+  it("R-crud-01: crud repository is interface only", async () => {
+    const ctx = {
+      resourceKebab: "users",
+      resourceCamel: "users",
+      entityPascal: "User",
+      crud: true,
+      fields: [],
+      routePrefix: "",
+    };
+    const repo = await renderTemplate("resource/repository.ts.eta", ctx);
+    expect(repo).toContain("export interface UserRepository");
+    expect(repo).not.toContain("TODO");
+    expect(repo).not.toContain("throw new Error");
+  });
+
+  it("R-crud-05: manual crud has empty domain fields", async () => {
+    const ctx = {
+      resourceKebab: "users",
+      resourceCamel: "users",
+      entityPascal: "User",
+      crud: true,
+      fields: [],
+      routePrefix: "",
+    };
+    const types = await renderTemplate("resource/types.ts.eta", ctx);
+    expect(types).toContain("id: string");
+    expect(types).not.toContain("name:");
+
+    const validate = await renderTemplate("resource/validate.ts.eta", ctx);
+    expect(validate).toContain("No update fields configured");
+  });
+
   it("R-crud-04: crud validate template and controller use parse helpers", async () => {
     const ctx = {
       resourceKebab: "users",
       resourceCamel: "users",
       entityPascal: "User",
       crud: true,
-      fields: [
-        { name: "name", tsType: "string" as const, required: true },
-        { name: "email", tsType: "string" as const, required: true },
-      ],
+      fields: [],
+      routePrefix: "",
     };
     const validate = await renderTemplate("resource/validate.ts.eta", ctx);
     expect(validate).toContain("parseCreateInput");
     expect(validate).toContain("ValidateResult");
-    expect(validate).toContain("Zod/Ajv");
 
     const controller = await renderTemplate("resource/controller.ts.eta", ctx);
     expect(controller).toContain("parseCreateInput");
-    expect(controller).not.toContain("function isCreateInput");
-  });
-
-  it("R-crud-01: crud repository has TODO stubs and no in-memory store", async () => {
-    const src = await renderTemplate("resource/repository.ts.eta", {
-      resourceKebab: "users",
-      resourceCamel: "users",
-      entityPascal: "User",
-      crud: true,
-      fields: [{ name: "name", tsType: "string", required: true }],
-    });
-    expect(src).toContain("TODO: implement findAll");
-    expect(src).not.toMatch(/\bMap\b/);
-    expect(src).not.toContain("randomUUID");
+    expect(controller).toContain("Repository not configured");
   });
 
   it("R-crud-03: crud routes template includes five methods", async () => {
@@ -114,7 +131,8 @@ describe("templates", () => {
       resourceCamel: "users",
       entityPascal: "User",
       crud: true,
-      fields: [{ name: "name", tsType: "string", required: true }],
+      fields: [],
+      routePrefix: "",
     });
     expect(src).toContain('method: "GET"');
     expect(src).toContain('method: "POST"');

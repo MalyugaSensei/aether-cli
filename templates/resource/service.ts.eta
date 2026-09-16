@@ -1,32 +1,44 @@
 <% if (it.crud) { %>
-import { <%= it.resourceCamel %>Repository } from "./<%= it.resourceKebab %>.repository";
-import type { <%= it.entityPascal %>, Create<%= it.entityPascal %>Input, Update<%= it.entityPascal %>Input } from "./<%= it.resourceKebab %>.types";
+import type { <%= it.entityPascal %>Repository } from "./<%= it.resourceKebab %>.repository";
+import type {
+  <%= it.entityPascal %>,
+  Create<%= it.entityPascal %>Input,
+  Update<%= it.entityPascal %>Input,
+} from "./<%= it.resourceKebab %>.types";
 
-export const <%= it.resourceCamel %>Service = {
-  list(): <%= it.entityPascal %>[] {
-    return <%= it.resourceCamel %>Repository.findAll();
-  },
+export function create<%= it.entityPascal %>Service(repository: <%= it.entityPascal %>Repository) {
+  return {
+    list(): <%= it.entityPascal %>[] {
+      return repository.findAll();
+    },
 
-  getById(id: string): <%= it.entityPascal %> | undefined {
-    return <%= it.resourceCamel %>Repository.findById(id);
-  },
+    getById(id: string): <%= it.entityPascal %> | undefined {
+      return repository.findById(id);
+    },
 
-  create(input: Create<%= it.entityPascal %>Input): <%= it.entityPascal %> {
-    return <%= it.resourceCamel %>Repository.create(input);
-  },
+    create(input: Create<%= it.entityPascal %>Input): <%= it.entityPascal %> {
+      return repository.create(input);
+    },
 
-  update(id: string, input: Update<%= it.entityPascal %>Input): <%= it.entityPascal %> | undefined {
-    return <%= it.resourceCamel %>Repository.update(id, input);
-  },
+    update(id: string, input: Update<%= it.entityPascal %>Input): <%= it.entityPascal %> | undefined {
+      return repository.update(id, input);
+    },
 
-  remove(id: string): boolean {
-    return <%= it.resourceCamel %>Repository.delete(id);
-  },
-};
+    remove(id: string): boolean {
+      return repository.delete(id);
+    },
+  };
+}
+
+export type <%= it.entityPascal %>Service = ReturnType<typeof create<%= it.entityPascal %>Service>;
 <% } else { %>
-export const <%= it.resourceCamel %>Service = {
-  status(): string {
-    return "<%= it.resourceKebab %>";
-  },
-};
+export function create<%= it.entityPascal %>Service() {
+  return {
+    status(): string {
+      return "<%= it.resourceKebab %>";
+    },
+  };
+}
+
+export type <%= it.entityPascal %>Service = ReturnType<typeof create<%= it.entityPascal %>Service>;
 <% } %>

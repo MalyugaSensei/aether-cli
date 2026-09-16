@@ -1,10 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Params } from "../app/router";
 import { JsonBodyError, readJson, sendError, sendJson } from "../app/http";
-import { <%= it.resourceCamel %>Service } from "./<%= it.resourceKebab %>.service";
+import type { <%= it.entityPascal %>Service } from "./<%= it.resourceKebab %>.service";
 <% if (it.crud) { %>
 import { parseCreateInput, parseUpdateInput } from "./<%= it.resourceKebab %>.validate";
 <% } %>
+
+const REPOSITORY_NOT_CONFIGURED = "Repository not configured";
 
 <% if (it.crud) { %>
 async function parseJson(req: IncomingMessage): Promise<unknown> {
@@ -17,79 +19,110 @@ async function parseJson(req: IncomingMessage): Promise<unknown> {
     throw new JsonBodyError("Invalid JSON body");
   }
 }
-<% } %>
 
-export const <%= it.resourceCamel %>Controller = {
-<% if (it.crud) { %>
-  async list(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
-    sendJson(res, 200, <%= it.resourceCamel %>Service.list());
-  },
-
-  async getById(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
-    const item = <%= it.resourceCamel %>Service.getById(params.id!);
-    if (!item) {
-      sendError(res, 404, "Not found");
-      return;
-    }
-    sendJson(res, 200, item);
-  },
-
-  async create(req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
-    let body: unknown;
-    try {
-      body = await parseJson(req);
-    } catch (err) {
-      if (err instanceof JsonBodyError) {
-        sendError(res, 400, err.message);
+export function create<%= it.entityPascal %>Controller(deps: {
+  service: <%= it.entityPascal %>Service | null;
+  repositoryConfigured: boolean;
+}) {
+  return {
+    async list(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+      if (!deps.repositoryConfigured || !deps.service) {
+        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
         return;
       }
-      throw err;
-    }
-    const parsed = parseCreateInput(body);
-    if (!parsed.ok) {
-      sendError(res, 400, parsed.message);
-      return;
-    }
-    const created = <%= it.resourceCamel %>Service.create(parsed.value);
-    sendJson(res, 201, created);
-  },
+      sendJson(res, 200, deps.service.list());
+    },
 
-  async update(req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
-    let body: unknown;
-    try {
-      body = await parseJson(req);
-    } catch (err) {
-      if (err instanceof JsonBodyError) {
-        sendError(res, 400, err.message);
+    async getById(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
+      if (!deps.repositoryConfigured || !deps.service) {
+        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
         return;
       }
-      throw err;
-    }
-    const parsed = parseUpdateInput(body);
-    if (!parsed.ok) {
-      sendError(res, 400, parsed.message);
-      return;
-    }
-    const updated = <%= it.resourceCamel %>Service.update(params.id!, parsed.value);
-    if (!updated) {
-      sendError(res, 404, "Not found");
-      return;
-    }
-    sendJson(res, 200, updated);
-  },
+      const item = deps.service.getById(params.id!);
+      if (!item) {
+        sendError(res, 404, "Not found");
+        return;
+      }
+      sendJson(res, 200, item);
+    },
 
-  async remove(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
-    const ok = <%= it.resourceCamel %>Service.remove(params.id!);
-    if (!ok) {
-      sendError(res, 404, "Not found");
-      return;
-    }
-    res.statusCode = 204;
-    res.end();
-  },
+    async create(req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+      if (!deps.repositoryConfigured || !deps.service) {
+        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        return;
+      }
+      let body: unknown;
+      try {
+        body = await parseJson(req);
+      } catch (err) {
+        if (err instanceof JsonBodyError) {
+          sendError(res, 400, err.message);
+          return;
+        }
+        throw err;
+      }
+      const parsed = parseCreateInput(body);
+      if (!parsed.ok) {
+        sendError(res, 400, parsed.message);
+        return;
+      }
+      const created = deps.service.create(parsed.value);
+      sendJson(res, 201, created);
+    },
+
+    async update(req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
+      if (!deps.repositoryConfigured || !deps.service) {
+        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        return;
+      }
+      let body: unknown;
+      try {
+        body = await parseJson(req);
+      } catch (err) {
+        if (err instanceof JsonBodyError) {
+          sendError(res, 400, err.message);
+          return;
+        }
+        throw err;
+      }
+      const parsed = parseUpdateInput(body);
+      if (!parsed.ok) {
+        sendError(res, 400, parsed.message);
+        return;
+      }
+      const updated = deps.service.update(params.id!, parsed.value);
+      if (!updated) {
+        sendError(res, 404, "Not found");
+        return;
+      }
+      sendJson(res, 200, updated);
+    },
+
+    async remove(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
+      if (!deps.repositoryConfigured || !deps.service) {
+        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        return;
+      }
+      const ok = deps.service.remove(params.id!);
+      if (!ok) {
+        sendError(res, 404, "Not found");
+        return;
+      }
+      res.statusCode = 204;
+      res.end();
+    },
+  };
+}
+
+export type <%= it.entityPascal %>Controller = ReturnType<typeof create<%= it.entityPascal %>Controller>;
 <% } else { %>
-  async status(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
-    sendJson(res, 200, { resource: <%= it.resourceCamel %>Service.status() });
-  },
+export function create<%= it.entityPascal %>Controller(deps: { service: <%= it.entityPascal %>Service }) {
+  return {
+    async status(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+      sendJson(res, 200, { resource: deps.service.status() });
+    },
+  };
+}
+
+export type <%= it.entityPascal %>Controller = ReturnType<typeof create<%= it.entityPascal %>Controller>;
 <% } %>
-};

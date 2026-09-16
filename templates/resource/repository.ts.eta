@@ -1,27 +1,11 @@
-import type { <%= it.entityPascal %><% if (it.crud) { %>, Create<%= it.entityPascal %>Input, Update<%= it.entityPascal %>Input<% } %> } from "./<%= it.resourceKebab %>.types";
+import type { <%= it.entityPascal %> } from "./<%= it.resourceKebab %>.types";
 
-// TODO: implement persistence (database, file, etc.)
-
-export const <%= it.resourceCamel %>Repository = {
+export interface <%= it.entityPascal %>Repository {
 <% if (it.crud) { %>
-  findAll(): <%= it.entityPascal %>[] {
-    throw new Error("TODO: implement findAll");
-  },
-
-  findById(_id: string): <%= it.entityPascal %> | undefined {
-    throw new Error("TODO: implement findById");
-  },
-
-  create(_input: Create<%= it.entityPascal %>Input): <%= it.entityPascal %> {
-    throw new Error("TODO: implement create");
-  },
-
-  update(_id: string, _input: Update<%= it.entityPascal %>Input): <%= it.entityPascal %> | undefined {
-    throw new Error("TODO: implement update");
-  },
-
-  delete(_id: string): boolean {
-    throw new Error("TODO: implement delete");
-  },
+  findAll(): <%= it.entityPascal %>[];
+  findById(id: string): <%= it.entityPascal %> | undefined;
+  create(input: Omit<<%= it.entityPascal %>, "id">): <%= it.entityPascal %>;
+  update(id: string, input: Partial<Omit<<%= it.entityPascal %>, "id">>): <%= it.entityPascal %> | undefined;
+  delete(id: string): boolean;
 <% } %>
-};
+}

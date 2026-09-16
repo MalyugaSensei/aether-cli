@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { spawn } from "node:child_process";
@@ -52,12 +52,43 @@ describe("integration: init + crud resource", () => {
     expect(r.code).toBe(0);
   });
 
+  it("R-resource-04: --tests on existing CRUD adds tests/ only", async () => {
+    const r = await runChisel(["g", "resource", "users", "--tests"], dir);
+    expect(r.code).toBe(0);
+    const fake = join(dir, "tests/users.repository.fake.ts");
+    const modTest = join(dir, "tests/users.module.test.ts");
+    expect(existsSync(fake)).toBe(true);
+    expect(existsSync(modTest)).toBe(true);
+  });
+
   it("TypeScript program has no diagnostics", () => {
     const errors = tscCheck(dir, [join(cliRoot, "node_modules/@types")]);
     expect(errors).toEqual([]);
   });
 
-  it("R-crud-02: controller rejects invalid create body without calling persistence", async () => {
+  it("R-composition-02: CRUD returns 501 without repository wiring", async () => {
+    const port = 40_000 + Math.floor(Math.random() * 10_000);
+    const child = spawn(process.execPath, [tsxCli, "src/main.ts"], {
+      cwd: dir,
+      env: { ...process.env, PORT: String(port), HOST: "127.0.0.1" },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    try {
+      await waitForServer(port);
+
+      const res = await fetch(`http://127.0.0.1:${port}/users`);
+      expect(res.status).toBe(501);
+      const body = (await res.json()) as { error?: string };
+      expect(body.error).toBe("Repository not configured");
+    } finally {
+      const exitPromise = waitForProcessExit(child);
+      child.kill("SIGTERM");
+      await exitPromise;
+    }
+  });
+
+  it("R-crud-02: controller rejects unknown create fields when schema is empty", async () => {
     const port = 40_000 + Math.floor(Math.random() * 10_000);
     const child = spawn(process.execPath, [tsxCli, "src/main.ts"], {
       cwd: dir,
@@ -71,9 +102,9 @@ describe("integration: init + crud resource", () => {
       const bad = await fetch(`http://127.0.0.1:${port}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: "{}",
+        body: '{"unexpected":true}',
       });
-      expect(bad.status).toBe(400);
+      expect(bad.status).toBe(501);
     } finally {
       const exitPromise = waitForProcessExit(child);
       child.kill("SIGTERM");
@@ -96,9 +127,18 @@ describe("integration: init + crud resource", () => {
     expect(await exitPromise).toBe(0);
   });
 
+  it("R-middleware-04: middleware without --global does not touch app.ts", async () => {
+    const before = await import("node:fs/promises").then((fs) => fs.readFile(join(dir, "src/app.ts"), "utf8"));
+    const r = await runChisel(["g", "middleware", "local-only"], dir);
+    expect(r.code).toBe(0);
+    const after = await import("node:fs/promises").then((fs) => fs.readFile(join(dir, "src/app.ts"), "utf8"));
+    expect(after).toBe(before);
+    expect(after).not.toContain("localOnlyMiddleware");
+  });
+
   it("R-middleware-02: middleware registration is idempotent", async () => {
-    await runChisel(["g", "middleware", "auth"], dir);
-    const second = await runChisel(["g", "middleware", "auth"], dir);
+    await runChisel(["g", "middleware", "auth", "--global"], dir);
+    const second = await runChisel(["g", "middleware", "auth", "--global"], dir);
     expect(second.code).not.toBe(0);
     const app = await import("node:fs/promises").then((fs) => fs.readFile(join(dir, "src/app.ts"), "utf8"));
     expect(app.match(/authMiddleware/g)?.length).toBeLessThanOrEqual(3);

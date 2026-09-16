@@ -1,0 +1,119 @@
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                                                                     │
+  │   Chisel · scaffold Node.js HTTP backends in plain TypeScript       │
+  │                                                                     │
+  │   Generated apps run without Chisel · zero runtime dependencies     │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+
+  QUICK START
+  ───────────────────────────────────────────────────────────────────────
+
+    mkdir my-api && cd my-api
+    chisel init
+    npm install
+    chisel g resource users --crud
+    npm run dev
+
+
+  WHAT YOU GET
+  ───────────────────────────────────────────────────────────────────────
+
+    init          HTTP server, router, composition, config from env,
+                  structured logging, request logger, error handler,
+                  health check
+
+    resource      types → validate → repository → service →
+                  controller → routes → module (wired in composition)
+
+    middleware    passthrough stub; optional global registration
+
+    openapi       OpenAPI 3.0 JSON/YAML → CRUD resources (batch)
+
+
+  COMMANDS
+  ───────────────────────────────────────────────────────────────────────
+
+    chisel init [options]
+        Scaffold a new project in the current directory.
+
+        -f, --force       Overwrite scaffold files (never overwrites .env)
+        --dry-run         Show planned files without writing
+
+    chisel generate …   alias: g
+        Generate application source under an initialized project.
+
+        g resource <name> [options]
+            --crud              Full CRUD stack + validate layer
+            --singular <name>     Entity name (default from resource name)
+            --tests             With --crud on create; on existing CRUD,
+                                adds tests/ only (fake repo + smoke test)
+            -f, --force         Overwrite generated files
+            --dry-run
+
+        g middleware <name> [options]
+            --global            Append to global chain in src/app.ts
+            --dry-run           Without --global: file only, you wire routes
+
+        g openapi <spec> [options]
+            --strict            Fail if any collection path is skipped
+            --only a,b          Generate subset of resources
+            -f, --force
+            --dry-run
+
+    chisel check
+        Verify project matches Chisel layout (composition, config).
+
+    chisel doctor
+        Node version, project context, packaged templates on disk.
+
+    chisel upgrade
+        Human-readable checklist if the project drifted from the contract
+        (no automatic code migration).
+
+    chisel help
+        This guide.
+
+
+  GLOBAL OPTIONS
+  ───────────────────────────────────────────────────────────────────────
+
+    --json              Machine-readable output (errors too)
+    --diff              With --dry-run: unified diff preview
+    -V, --version
+    -h, --help          Short command list (Commander)
+
+
+  EXAMPLES
+  ───────────────────────────────────────────────────────────────────────
+
+    Preview before write
+      chisel init --dry-run --diff
+
+    CRUD + tests in one step
+      chisel g resource orders --crud --tests
+
+    Add tests after the fact
+      chisel g resource orders --tests
+
+    Auth middleware on every request
+      chisel g middleware auth --global
+
+    From API spec
+      chisel g openapi ./api.yaml --strict
+
+    CI-friendly failure
+      chisel check --json
+
+
+  NOTES
+  ───────────────────────────────────────────────────────────────────────
+
+    · CommonJS output, local imports without .ts extensions
+    · CRUD repository is an interface — wire a real store in composition
+    · OpenAPI: 3.0.x, JSON bodies, in-spec $ref to #/components/schemas
+    · Per-route middleware: not generated; use route handlers or extend router
+
+  More for CLI contributors: AGENTS.md and specs/ in the repository.

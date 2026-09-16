@@ -8,3 +8,8 @@ const dest = join(root, "dist", "templates");
 
 mkdirSync(dest, { recursive: true });
 cpSync(src, dest, { recursive: true });
+
+const helpSrc = join(root, "help");
+const helpDest = join(root, "dist", "help");
+mkdirSync(helpDest, { recursive: true });
+cpSync(helpSrc, helpDest, { recursive: true });

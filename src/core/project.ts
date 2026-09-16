@@ -35,16 +35,33 @@ export function findProjectRoot(startDir: string): string {
   }
 }
 
+export function validateChiselConfig(raw: Partial<ChiselConfig>): ChiselConfig {
+  if (raw.version !== undefined && raw.version !== 1) {
+    throw new Error(`Unsupported chisel.config.json version: ${raw.version}. Expected 1.`);
+  }
+  const srcDir = raw.srcDir ?? DEFAULT_CONFIG.srcDir;
+  const appEntry = raw.appEntry ?? DEFAULT_CONFIG.appEntry;
+  if (!srcDir || srcDir.includes("..") || srcDir.startsWith("/")) {
+    throw new Error(`Invalid chisel.config.json srcDir: "${srcDir}".`);
+  }
+  if (!appEntry || appEntry.includes("..")) {
+    throw new Error(`Invalid chisel.config.json appEntry: "${appEntry}".`);
+  }
+  return { version: 1, srcDir, appEntry };
+}
+
 export function loadConfig(root: string): ChiselConfig {
   const configPath = join(root, "chisel.config.json");
   if (!existsSync(configPath)) {
     return { ...DEFAULT_CONFIG };
   }
-  const raw = JSON.parse(readFileSync(configPath, "utf8")) as Partial<ChiselConfig>;
-  return {
-    ...DEFAULT_CONFIG,
-    ...raw,
-  };
+  let raw: Partial<ChiselConfig>;
+  try {
+    raw = JSON.parse(readFileSync(configPath, "utf8")) as Partial<ChiselConfig>;
+  } catch {
+    throw new Error(`Invalid JSON in chisel.config.json at ${configPath}.`);
+  }
+  return validateChiselConfig(raw);
 }
 
 export function createProjectContext(startDir: string): ProjectContext {
@@ -54,6 +71,12 @@ export function createProjectContext(startDir: string): ProjectContext {
   if (!existsSync(appEntryPath)) {
     throw new Error(
       `App entry not found at ${config.appEntry}. Run \`chisel init\` or restore src/app.ts.`,
+    );
+  }
+  const compositionPath = join(root, config.srcDir, "app", "composition.ts");
+  if (!existsSync(compositionPath)) {
+    throw new Error(
+      `Composition entry not found at ${config.srcDir}/app/composition.ts. Run \`chisel init\` or restore it.`,
     );
   }
   return { root, config, appEntryPath };

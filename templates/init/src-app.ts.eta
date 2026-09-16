@@ -1,12 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createRouter, type Route } from "./app/router";
 import type { Middleware } from "./app/middleware/types";
+import { buildAppRoutes } from "./app/composition";
 import { handleRequestError } from "./app/middleware/error-handler";
 import { requestLogger } from "./app/middleware/request-logger";
-import { healthRoutes } from "./health/health.routes";
 
 const middleware: Middleware[] = [requestLogger];
-const routes: Route[] = [...healthRoutes];
+const routes: Route[] = buildAppRoutes();
 
 export function createApp(): (
   req: IncomingMessage,

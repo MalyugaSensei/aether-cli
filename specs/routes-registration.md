@@ -2,13 +2,13 @@
 
 ## Description
 
-Automatic registration of resource routes in `src/app.ts`.
+Automatic registration of resource modules in `src/app/composition.ts`.
 
 ## Modified files
 
-- `src/app.ts`
-  - `import { <name>Routes } from "./<name>/<name>.routes.js";`
-  - `routes` array: add `...<name>Routes`
+- `src/app/composition.ts`
+  - `import { createUserModule } from "../users/users.module";` (example)
+  - `buildAppRoutes()` return array: add `...createUserModule({}).routes`
 
 ## Idempotency
 
