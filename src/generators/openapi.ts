@@ -2,7 +2,8 @@ import { resolve } from "node:path";
 import type { FileOp } from "../core/plan.js";
 import { pathExists } from "../core/plan.js";
 import { resourceDirRel } from "../core/paths.js";
-import { ChiselError } from "../core/errors.js";
+import { ChiselError, ErrorCode } from "../core/errors.js";
+import { GENERATOR } from "../core/constants.js";
 import { extractResources } from "../openapi/extract-resources.js";
 import { loadOpenApiSpec } from "../openapi/load-spec.js";
 import type { Generator } from "./types.js";
@@ -17,7 +18,7 @@ export interface OpenApiOptions {
 }
 
 export const openapiGenerator: Generator<OpenApiOptions> = {
-  name: "openapi",
+  name: GENERATOR.openapi,
   async plan(ctx, options) {
     const absSpec = resolve(ctx.root, options.specPath);
     const doc = loadOpenApiSpec(absSpec);
@@ -28,7 +29,7 @@ export const openapiGenerator: Generator<OpenApiOptions> = {
 
     if (resources.length === 0) {
       throw new ChiselError(
-        "VALIDATION",
+        ErrorCode.VALIDATION,
         "No REST collections found. Expected /{resource} with POST JSON body and /{resource}/{id}.",
       );
     }
@@ -43,7 +44,7 @@ export const openapiGenerator: Generator<OpenApiOptions> = {
       const dirRel = resourceDirRel(ctx, resource.name);
       if (pathExists(ctx.root, dirRel) && !options.force) {
         throw new ChiselError(
-          "ALREADY_EXISTS",
+          ErrorCode.ALREADY_EXISTS,
           `Resource directory already exists: ${dirRel}. Use --force to overwrite.`,
         );
       }

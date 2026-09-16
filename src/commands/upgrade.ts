@@ -2,11 +2,12 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { loadConfig } from "../core/project.js";
 import { compositionRel } from "../core/paths.js";
+import { DEFAULT_APP_ENTRY, EXIT_FAIL, EXIT_OK, PACKAGE_JSON } from "../core/constants.js";
 
 export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?: boolean }): Promise<number> {
   const suggestions: string[] = [];
 
-  if (!existsSync(join(cwd, "package.json"))) {
+  if (!existsSync(join(cwd, PACKAGE_JSON))) {
     suggestions.push("Run chisel init to create a project.");
   } else {
     try {
@@ -19,8 +20,8 @@ export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?
     if (!existsSync(join(cwd, comp))) {
       suggestions.push(`Add ${comp} (restore from latest chisel init template).`);
     }
-    if (!existsSync(join(cwd, "src/app.ts"))) {
-      suggestions.push("Restore src/app.ts from latest chisel init template.");
+    if (!existsSync(join(cwd, DEFAULT_APP_ENTRY))) {
+      suggestions.push(`Restore ${DEFAULT_APP_ENTRY} from latest chisel init template.`);
     }
   }
 
@@ -38,5 +39,5 @@ export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?
     }
   }
 
-  return ok ? 0 : 1;
+  return ok ? EXIT_OK : EXIT_FAIL;
 }

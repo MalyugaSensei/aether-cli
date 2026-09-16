@@ -9,6 +9,12 @@ export type AppConfig = {
 };
 
 const ALLOWED_NODE_ENV = new Set(["development", "production", "test"]);
+const DEFAULT_PORT = 3000;
+const DEFAULT_HOST = "0.0.0.0";
+const DEFAULT_NODE_ENV = "development";
+const DEFAULT_SHUTDOWN_GRACE_MS = 10000;
+const PORT_MIN = 1;
+const PORT_MAX = 65535;
 
 function stripQuotes(value: string): string {
   if (
@@ -50,23 +56,23 @@ export function loadEnvFile(relativePath = ".env"): void {
 export function loadConfig(): AppConfig {
   loadEnvFile();
 
-  const portRaw = process.env.PORT ?? "3000";
+  const portRaw = process.env.PORT ?? String(DEFAULT_PORT);
   const port = Number(portRaw);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+  if (!Number.isInteger(port) || port < PORT_MIN || port > PORT_MAX) {
     throw new Error(`Invalid PORT: ${portRaw}`);
   }
 
-  const host = process.env.HOST ?? "0.0.0.0";
+  const host = process.env.HOST ?? DEFAULT_HOST;
   if (host.length === 0) {
     throw new Error("HOST must not be empty");
   }
 
-  const nodeEnv = process.env.NODE_ENV ?? "development";
+  const nodeEnv = process.env.NODE_ENV ?? DEFAULT_NODE_ENV;
   if (!ALLOWED_NODE_ENV.has(nodeEnv)) {
     throw new Error(`Invalid NODE_ENV: ${nodeEnv}`);
   }
 
-  const graceRaw = process.env.SHUTDOWN_GRACE_MS ?? "10000";
+  const graceRaw = process.env.SHUTDOWN_GRACE_MS ?? String(DEFAULT_SHUTDOWN_GRACE_MS);
   const shutdownGraceMs = Number(graceRaw);
   if (!Number.isFinite(shutdownGraceMs) || shutdownGraceMs < 0) {
     throw new Error(`Invalid SHUTDOWN_GRACE_MS: ${graceRaw}`);

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { createProjectContext, loadConfig } from "../core/project.js";
 import { compositionRel } from "../core/paths.js";
 import { pathExists } from "../core/plan.js";
+import { AST_SYMBOL, EXIT_FAIL, EXIT_OK } from "../core/constants.js";
 
 export async function runCheck(cwd: string, options: { json?: boolean }): Promise<number> {
   const issues: string[] = [];
@@ -20,8 +21,8 @@ export async function runCheck(cwd: string, options: { json?: boolean }): Promis
       issues.push(`Missing ${compPath}`);
     } else {
       const src = readFileSync(join(cwd, compPath), "utf8");
-      if (!src.includes("function buildAppRoutes")) {
-        issues.push(`${compPath} must export buildAppRoutes()`);
+      if (!src.includes(`function ${AST_SYMBOL.buildAppRoutes}`)) {
+        issues.push(`${compPath} must export ${AST_SYMBOL.buildAppRoutes}()`);
       }
     }
   } catch (err) {
@@ -38,5 +39,5 @@ export async function runCheck(cwd: string, options: { json?: boolean }): Promis
       console.error(issue);
     }
   }
-  return ok ? 0 : 1;
+  return ok ? EXIT_OK : EXIT_FAIL;
 }
