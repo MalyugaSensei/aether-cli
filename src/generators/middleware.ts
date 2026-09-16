@@ -1,7 +1,11 @@
-import { join, relative } from "node:path";
+import { relative } from "node:path";
 import { addNamedImportIfMissing, appendToArrayLiteralIfMissing } from "../core/ast.js";
 import type { FileOp } from "../core/plan.js";
 import { pathExists } from "../core/plan.js";
+import {
+  importPathFromAppEntry,
+  middlewareFileRel,
+} from "../core/paths.js";
 import {
   middlewareExportName,
   middlewareFileName,
@@ -14,6 +18,7 @@ import type { Generator } from "./types.js";
 export interface MiddlewareOptions {
   name: string;
   force?: boolean;
+  global?: boolean;
 }
 
 export const middlewareGenerator: Generator<MiddlewareOptions> = {
@@ -22,7 +27,7 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
     const kebab = middlewareFileName(options.name);
     validateResourceName(kebab);
     const exportName = middlewareExportName(kebab);
-    const relPath = join("src/app/middleware", `${kebab}.ts`);
+    const relPath = middlewareFileRel(ctx, kebab);
 
     if (pathExists(ctx.root, relPath) && !options.force) {
       throw new Error(`Middleware already exists: ${relPath}. Use --force to overwrite.`);
@@ -34,19 +39,20 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
     });
 
     const appRel = relative(ctx.root, ctx.appEntryPath).split("\\").join("/");
-    const importPath = `./app/middleware/${kebab}`;
+    const importPath = importPathFromAppEntry(ctx, middlewareFileRel(ctx, kebab).replace(/\.ts$/, ""));
 
-    const ops: FileOp[] = [
-      { kind: "create", path: relPath, contents },
-      {
+    const ops: FileOp[] = [{ kind: "create", path: relPath, contents }];
+
+    if (options.global) {
+      ops.push({
         kind: "modify",
         path: appRel,
         edit(sf) {
           addNamedImportIfMissing(sf, importPath, [exportName]);
           appendToArrayLiteralIfMissing(sf, "middleware", exportName, false);
         },
-      },
-    ];
+      });
+    }
 
     return ops;
   },

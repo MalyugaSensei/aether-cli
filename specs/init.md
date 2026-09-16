@@ -19,6 +19,7 @@
 - `.env.example`
 - `.env` — only when `.env` is not already present in the target directory
 - `src/main.ts`
+- `src/app/composition.ts`
 - `src/app.ts`
 - `src/app/config.ts`
 - `src/app/server.ts`

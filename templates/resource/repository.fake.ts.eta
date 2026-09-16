@@ -1,0 +1,32 @@
+import type { <%= it.entityPascal %>, Create<%= it.entityPascal %>Input } from "../src/<%= it.resourceKebab %>/<%= it.resourceKebab %>.types";
+import type { <%= it.entityPascal %>Repository } from "../src/<%= it.resourceKebab %>/<%= it.resourceKebab %>.repository";
+
+export function createFake<%= it.entityPascal %>Repository(): <%= it.entityPascal %>Repository {
+  const store = new Map<string, <%= it.entityPascal %>>();
+  let seq = 1;
+
+  return {
+    findAll() {
+      return [...store.values()];
+    },
+    findById(id: string) {
+      return store.get(id);
+    },
+    create(input: Create<%= it.entityPascal %>Input) {
+      const id = String(seq++);
+      const item = { id, ...input } as <%= it.entityPascal %>;
+      store.set(id, item);
+      return item;
+    },
+    update(id, input) {
+      const existing = store.get(id);
+      if (!existing) return undefined;
+      const next = { ...existing, ...input };
+      store.set(id, next);
+      return next;
+    },
+    delete(id) {
+      return store.delete(id);
+    },
+  };
+}

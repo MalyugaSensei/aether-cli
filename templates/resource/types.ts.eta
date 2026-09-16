@@ -6,15 +6,7 @@ export type <%= it.entityPascal %> = {
 };
 
 <% if (it.crud) { %>
-export type Create<%= it.entityPascal %>Input = {
-<% it.fields.filter(function(f) { return f.required; }).forEach(function(field) { %>
-  <%= field.name %>: <%= field.tsType %>;
-<% }); %>
-};
+export type Create<%= it.entityPascal %>Input = Omit<<%= it.entityPascal %>, "id">;
 
-export type Update<%= it.entityPascal %>Input = {
-<% it.fields.forEach(function(field) { %>
-  <%= field.name %>?: <%= field.tsType %>;
-<% }); %>
-};
+export type Update<%= it.entityPascal %>Input = Partial<Omit<<%= it.entityPascal %>, "id">>;
 <% } %>

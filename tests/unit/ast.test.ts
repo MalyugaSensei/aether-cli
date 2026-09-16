@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Project } from "ts-morph";
-import { addNamedImportIfMissing, appendToArrayLiteralIfMissing } from "../../src/core/ast.js";
+import { addNamedImportIfMissing, appendModuleRoutesSpreadIfMissing, appendToArrayLiteralIfMissing } from "../../src/core/ast.js";
 
 const sampleApp = `import { healthRoutes } from "./health/health.routes";
 
@@ -18,12 +18,19 @@ describe("ast", () => {
     expect(imports).toHaveLength(1);
   });
 
-  it("R-resource-03: appendToArrayLiteralIfMissing does not duplicate spread", () => {
+  it("R-resource-03: appendModuleRoutesSpreadIfMissing does not duplicate spread", () => {
     const project = new Project({ useInMemoryFileSystem: true });
-    const sf = project.createSourceFile("app.ts", sampleApp);
-    appendToArrayLiteralIfMissing(sf, "routes", "usersRoutes", true);
-    appendToArrayLiteralIfMissing(sf, "routes", "usersRoutes", true);
+    const comp = `import { healthRoutes } from "../health/health.routes";
+import type { Route } from "./router";
+
+export function buildAppRoutes(): Route[] {
+  return [...healthRoutes];
+}
+`;
+    const sf = project.createSourceFile("composition.ts", comp);
+    appendModuleRoutesSpreadIfMissing(sf, "createUsersModule", "{}");
+    appendModuleRoutesSpreadIfMissing(sf, "createUsersModule", "{}");
     const text = sf.getFullText();
-    expect(text.match(/\.\.\.usersRoutes/g)?.length).toBe(1);
+    expect(text.match(/createUsersModule\(\{\}\)/g)?.length).toBe(1);
   });
 });

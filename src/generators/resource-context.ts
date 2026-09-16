@@ -17,28 +17,31 @@ export interface ResourceTemplateContext {
   entityPascal: string;
   crud: boolean;
   fields: ResourceField[];
+  routePrefix: string;
 }
-
-export const DEFAULT_CRUD_FIELDS: ResourceField[] = [
-  { name: "name", tsType: "string", required: true },
-];
 
 export function buildResourceContext(
   name: string,
   crud: boolean,
   singular?: string,
   fields?: ResourceField[],
+  routePrefix = "",
 ): ResourceTemplateContext {
   const resourceKebab = toKebab(name);
   validateResourceName(resourceKebab);
-  const resolvedFields = crud ? (fields ?? DEFAULT_CRUD_FIELDS) : [];
+  const resolvedFields = crud ? (fields ?? []) : [];
   return {
     resourceKebab,
     resourceCamel: toCamel(resourceKebab),
     entityPascal: resolveSingularPascal(resourceKebab, singular),
     crud,
     fields: resolvedFields,
+    routePrefix,
   };
+}
+
+export function moduleFactoryName(entityPascal: string): string {
+  return `create${entityPascal}Module`;
 }
 
 export function routesExportName(resourceCamel: string): string {

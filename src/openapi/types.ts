@@ -31,9 +31,27 @@ export interface JsonSchema {
   properties?: Record<string, JsonSchema>;
   required?: string[];
   $ref?: string;
+  enum?: unknown[];
+  nullable?: boolean;
 }
 
 export interface ExtractedResource {
   name: string;
   fields: ResourceField[];
+  routePrefix: string;
+}
+
+export interface SkippedPath {
+  path: string;
+  reason: string;
+}
+
+export interface ExtractResult {
+  resources: ExtractedResource[];
+  skipped: SkippedPath[];
+}
+
+export interface ExtractOptions {
+  strict?: boolean;
+  only?: string[];
 }

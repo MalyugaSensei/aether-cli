@@ -3,6 +3,7 @@
 ## Command and flags
 
 - `chisel generate middleware <name>` / `chisel g middleware <name>`
+- `--global` — register in `src/app.ts` global `middleware` array
 - `--force`, `--dry-run`
 
 ## Preconditions
@@ -15,7 +16,7 @@
 
 ## Modified files
 
-- `src/app.ts`: import middleware; entry in the `middleware` array.
+- With `--global` only: `src/app.ts` — import middleware; entry in the `middleware` array.
 
 ## Idempotency
 
@@ -24,8 +25,9 @@
 ## Acceptance criteria
 
 - R-middleware-01: creates passthrough middleware with `next()` and a TODO.
-- R-middleware-02: registers middleware globally in `src/app.ts`.
-- R-middleware-03: a second run does not duplicate registration.
+- R-middleware-02: with `--global`, registers middleware in `src/app.ts`.
+- R-middleware-03: a second run does not duplicate registration (with `--global`).
+- R-middleware-04: without `--global`, creates the middleware file only; `src/app.ts` is unchanged.
 
 ## Out of scope
 

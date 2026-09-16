@@ -86,3 +86,40 @@ export function appendToArrayLiteralIfMissing(
     arr.addElement(elementIdentifier);
   }
 }
+
+function findBuildAppRoutesReturnArray(
+  sf: SourceFile,
+): import("ts-morph").ArrayLiteralExpression | undefined {
+  const fn = sf.getFunction("buildAppRoutes");
+  if (!fn) {
+    return undefined;
+  }
+  for (const ret of fn.getDescendantsOfKind(SyntaxKind.ReturnStatement)) {
+    const expr = ret.getExpression();
+    if (expr?.isKind(SyntaxKind.ArrayLiteralExpression)) {
+      return expr;
+    }
+  }
+  return undefined;
+}
+
+/** Append `...createFooModule({}).routes` to `buildAppRoutes()` return array if missing. */
+export function appendModuleRoutesSpreadIfMissing(
+  sf: SourceFile,
+  moduleFactory: string,
+  moduleCallArgs: string,
+): void {
+  const arr = findBuildAppRoutesReturnArray(sf);
+  if (!arr) {
+    throw new Error(
+      `Could not find buildAppRoutes() return array in ${sf.getFilePath()}`,
+    );
+  }
+  const marker = `${moduleFactory}(`;
+  for (const el of arr.getElements()) {
+    if (el.getText().includes(marker)) {
+      return;
+    }
+  }
+  arr.addElement(`...${moduleFactory}(${moduleCallArgs}).routes`);
+}

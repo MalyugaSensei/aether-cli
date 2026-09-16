@@ -1,0 +1,25 @@
+<% if (it.crud) { %>
+import type { <%= it.entityPascal %>Repository } from "./<%= it.resourceKebab %>.repository";
+import { create<%= it.entityPascal %>Controller } from "./<%= it.resourceKebab %>.controller";
+import { create<%= it.entityPascal %>Routes } from "./<%= it.resourceKebab %>.routes";
+import { create<%= it.entityPascal %>Service } from "./<%= it.resourceKebab %>.service";
+
+export function create<%= it.entityPascal %>Module(opts: { repository?: <%= it.entityPascal %>Repository }) {
+  const repositoryConfigured = opts.repository !== undefined;
+  const service = repositoryConfigured ? create<%= it.entityPascal %>Service(opts.repository!) : null;
+  const controller = create<%= it.entityPascal %>Controller({ service, repositoryConfigured });
+  const routes = create<%= it.entityPascal %>Routes(controller);
+  return { routes };
+}
+<% } else { %>
+import { create<%= it.entityPascal %>Controller } from "./<%= it.resourceKebab %>.controller";
+import { create<%= it.entityPascal %>Routes } from "./<%= it.resourceKebab %>.routes";
+import { create<%= it.entityPascal %>Service } from "./<%= it.resourceKebab %>.service";
+
+export function create<%= it.entityPascal %>Module() {
+  const service = create<%= it.entityPascal %>Service();
+  const controller = create<%= it.entityPascal %>Controller({ service });
+  const routes = create<%= it.entityPascal %>Routes(controller);
+  return { routes };
+}
+<% } %>

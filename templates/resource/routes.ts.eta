@@ -1,14 +1,17 @@
+<% const basePath = it.routePrefix ? it.routePrefix + "/" + it.resourceKebab : "/" + it.resourceKebab; %>
 import type { Route } from "../app/router";
-import { <%= it.resourceCamel %>Controller } from "./<%= it.resourceKebab %>.controller";
+import type { <%= it.entityPascal %>Controller } from "./<%= it.resourceKebab %>.controller";
 
-export const <%= it.resourceCamel %>Routes: Route[] = [
+export function create<%= it.entityPascal %>Routes(controller: <%= it.entityPascal %>Controller): Route[] {
+  return [
 <% if (it.crud) { %>
-  { method: "GET", path: "/<%= it.resourceKebab %>", handler: <%= it.resourceCamel %>Controller.list },
-  { method: "GET", path: "/<%= it.resourceKebab %>/:id", handler: <%= it.resourceCamel %>Controller.getById },
-  { method: "POST", path: "/<%= it.resourceKebab %>", handler: <%= it.resourceCamel %>Controller.create },
-  { method: "PATCH", path: "/<%= it.resourceKebab %>/:id", handler: <%= it.resourceCamel %>Controller.update },
-  { method: "DELETE", path: "/<%= it.resourceKebab %>/:id", handler: <%= it.resourceCamel %>Controller.remove },
+    { method: "GET", path: "<%= basePath %>", handler: controller.list },
+    { method: "GET", path: "<%= basePath %>/:id", handler: controller.getById },
+    { method: "POST", path: "<%= basePath %>", handler: controller.create },
+    { method: "PATCH", path: "<%= basePath %>/:id", handler: controller.update },
+    { method: "DELETE", path: "<%= basePath %>/:id", handler: controller.remove },
 <% } else { %>
-  { method: "GET", path: "/<%= it.resourceKebab %>", handler: <%= it.resourceCamel %>Controller.status },
+    { method: "GET", path: "<%= basePath %>", handler: controller.status },
 <% } %>
-];
+  ];
+}
