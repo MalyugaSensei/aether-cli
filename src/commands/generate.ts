@@ -1,11 +1,12 @@
 import { commitPlan } from "../core/plan.js";
 import { createProjectContext } from "../core/project.js";
+import { GENERATOR, type GeneratorName } from "../core/constants.js";
 import { middlewareGenerator } from "../generators/middleware.js";
 import { openapiGenerator } from "../generators/openapi.js";
 import { resourceGenerator } from "../generators/resource.js";
 
 export async function runGenerate(
-  kind: "middleware" | "resource" | "openapi",
+  kind: Exclude<GeneratorName, "project">,
   name: string | undefined,
   options: {
     crud?: boolean;
@@ -24,10 +25,10 @@ export async function runGenerate(
   const ctx = createProjectContext(process.cwd());
 
   let ops;
-  if (kind === "middleware") {
+  if (kind === GENERATOR.middleware) {
     if (!name) throw new Error("Middleware name is required.");
     ops = await middlewareGenerator.plan(ctx, { name, force: options.force, global: options.global });
-  } else if (kind === "openapi") {
+  } else if (kind === GENERATOR.openapi) {
     if (!options.specPath) throw new Error("OpenAPI spec path is required.");
     ops = await openapiGenerator.plan(ctx, {
       specPath: options.specPath,
@@ -53,7 +54,7 @@ export async function runGenerate(
     showDiff: options.diff,
   });
   if (!options.dryRun && !options.json) {
-    if (kind === "openapi") {
+    if (kind === GENERATOR.openapi) {
       console.log(`Generated from OpenAPI "${options.specPath}"`);
     } else {
       console.log(`Generated ${kind} "${name}"`);

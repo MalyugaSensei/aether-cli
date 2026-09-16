@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { sendError } from "./http";
+import { sendError, HTTP_STATUS } from "./http";
 
 export type Params = Record<string, string>;
 
@@ -67,6 +67,6 @@ export function createRouter(routes: Route[]): Handler {
       return;
     }
 
-    sendError(res, 404, "Not Found");
+    sendError(res, HTTP_STATUS.NOT_FOUND, "Not Found");
   };
 }

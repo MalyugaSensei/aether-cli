@@ -1,5 +1,6 @@
 import type { SourceFile } from "ts-morph";
 import { SyntaxKind } from "ts-morph";
+import { AST_SYMBOL } from "./constants.js";
 
 export function addNamedImportIfMissing(
   sf: SourceFile,
@@ -90,7 +91,7 @@ export function appendToArrayLiteralIfMissing(
 function findBuildAppRoutesReturnArray(
   sf: SourceFile,
 ): import("ts-morph").ArrayLiteralExpression | undefined {
-  const fn = sf.getFunction("buildAppRoutes");
+  const fn = sf.getFunction(AST_SYMBOL.buildAppRoutes);
   if (!fn) {
     return undefined;
   }
@@ -112,7 +113,7 @@ export function appendModuleRoutesSpreadIfMissing(
   const arr = findBuildAppRoutesReturnArray(sf);
   if (!arr) {
     throw new Error(
-      `Could not find buildAppRoutes() return array in ${sf.getFilePath()}`,
+      `Could not find ${AST_SYMBOL.buildAppRoutes}() return array in ${sf.getFilePath()}`,
     );
   }
   const marker = `${moduleFactory}(`;

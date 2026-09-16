@@ -11,6 +11,7 @@ import {
   middlewareFileName,
   validateResourceName,
 } from "../core/naming.js";
+import { AST_SYMBOL, GENERATOR, TEMPLATE } from "../core/constants.js";
 import { renderTemplate } from "../core/render.js";
 import type { ProjectContext } from "../core/project.js";
 import type { Generator } from "./types.js";
@@ -22,7 +23,7 @@ export interface MiddlewareOptions {
 }
 
 export const middlewareGenerator: Generator<MiddlewareOptions> = {
-  name: "middleware",
+  name: GENERATOR.middleware,
   async plan(ctx, options) {
     const kebab = middlewareFileName(options.name);
     validateResourceName(kebab);
@@ -33,7 +34,7 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
       throw new Error(`Middleware already exists: ${relPath}. Use --force to overwrite.`);
     }
 
-    const contents = await renderTemplate("middleware/middleware.ts.eta", {
+    const contents = await renderTemplate(TEMPLATE.middleware, {
       name: kebab,
       exportName,
     });
@@ -49,7 +50,7 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
         path: appRel,
         edit(sf) {
           addNamedImportIfMissing(sf, importPath, [exportName]);
-          appendToArrayLiteralIfMissing(sf, "middleware", exportName, false);
+          appendToArrayLiteralIfMissing(sf, AST_SYMBOL.middlewareArray, exportName, false);
         },
       });
     }

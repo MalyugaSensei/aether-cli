@@ -1,5 +1,6 @@
 import { commitPlan } from "../core/plan.js";
 import { projectGenerator } from "../generators/project.js";
+import { CONFIG_VERSION, DEFAULT_APP_ENTRY, DEFAULT_SRC_DIR } from "../core/constants.js";
 
 export async function runInit(
   cwd: string,
@@ -7,7 +8,7 @@ export async function runInit(
 ): Promise<void> {
   const ctx = {
     root: cwd,
-    config: { version: 1, srcDir: "src", appEntry: "src/app.ts" },
+    config: { version: CONFIG_VERSION, srcDir: DEFAULT_SRC_DIR, appEntry: DEFAULT_APP_ENTRY },
     appEntryPath: "",
   };
   const ops = await projectGenerator.plan(ctx, {

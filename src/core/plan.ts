@@ -10,7 +10,7 @@ import {
 import { dirname, join } from "node:path";
 import type { SourceFile } from "ts-morph";
 import { Project } from "ts-morph";
-import { ChiselError } from "./errors.js";
+import { ChiselError, ErrorCode } from "./errors.js";
 import { formatMaterializedDiff, planToJson } from "./diff.js";
 import { formatContents } from "./render.js";
 
@@ -54,7 +54,7 @@ export async function materializePlan(
   for (const op of createOps) {
     const abs = join(root, op.path);
     if (existsSync(abs) && !options.force) {
-      throw new ChiselError("ALREADY_EXISTS", `File already exists: ${op.path}. Use --force to overwrite.`);
+      throw new ChiselError(ErrorCode.ALREADY_EXISTS, `File already exists: ${op.path}. Use --force to overwrite.`);
     }
   }
 
@@ -75,7 +75,7 @@ export async function materializePlan(
   for (const op of modifyOps) {
     const abs = join(root, op.path);
     if (!existsSync(abs)) {
-      throw new ChiselError("NOT_FOUND", `Cannot modify missing file: ${op.path}`);
+      throw new ChiselError(ErrorCode.NOT_FOUND, `Cannot modify missing file: ${op.path}`);
     }
     const previousContents = readFileSync(abs, "utf8");
     const sf = morphMem.createSourceFile(abs, previousContents);
@@ -135,7 +135,7 @@ export async function commitPlan(
       console.log(JSON.stringify({ changed, plan: planToJson(ops) }, null, 2));
     }
     if (changed) {
-      throw new ChiselError("VALIDATION", "Project drift: planned changes are required.");
+      throw new ChiselError(ErrorCode.VALIDATION, "Project drift: planned changes are required.");
     }
     return { materialized, changed };
   }

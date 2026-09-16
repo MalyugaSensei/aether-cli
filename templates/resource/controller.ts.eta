@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Params } from "../app/router";
-import { JsonBodyError, readJson, sendError, sendJson } from "../app/http";
+import { JsonBodyError, readJson, sendError, sendJson, HTTP_STATUS } from "../app/http";
 import type { <%= it.entityPascal %>Service } from "./<%= it.resourceKebab %>.service";
 <% if (it.crud) { %>
 import { parseCreateInput, parseUpdateInput } from "./<%= it.resourceKebab %>.validate";
@@ -27,28 +27,28 @@ export function create<%= it.entityPascal %>Controller(deps: {
   return {
     async list(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
       if (!deps.repositoryConfigured || !deps.service) {
-        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        sendError(res, HTTP_STATUS.NOT_IMPLEMENTED, REPOSITORY_NOT_CONFIGURED);
         return;
       }
-      sendJson(res, 200, deps.service.list());
+      sendJson(res, HTTP_STATUS.OK, deps.service.list());
     },
 
     async getById(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
       if (!deps.repositoryConfigured || !deps.service) {
-        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        sendError(res, HTTP_STATUS.NOT_IMPLEMENTED, REPOSITORY_NOT_CONFIGURED);
         return;
       }
       const item = deps.service.getById(params.id!);
       if (!item) {
-        sendError(res, 404, "Not found");
+        sendError(res, HTTP_STATUS.NOT_FOUND, "Not found");
         return;
       }
-      sendJson(res, 200, item);
+      sendJson(res, HTTP_STATUS.OK, item);
     },
 
     async create(req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
       if (!deps.repositoryConfigured || !deps.service) {
-        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        sendError(res, HTTP_STATUS.NOT_IMPLEMENTED, REPOSITORY_NOT_CONFIGURED);
         return;
       }
       let body: unknown;
@@ -56,23 +56,23 @@ export function create<%= it.entityPascal %>Controller(deps: {
         body = await parseJson(req);
       } catch (err) {
         if (err instanceof JsonBodyError) {
-          sendError(res, 400, err.message);
+          sendError(res, HTTP_STATUS.BAD_REQUEST, err.message);
           return;
         }
         throw err;
       }
       const parsed = parseCreateInput(body);
       if (!parsed.ok) {
-        sendError(res, 400, parsed.message);
+        sendError(res, HTTP_STATUS.BAD_REQUEST, parsed.message);
         return;
       }
       const created = deps.service.create(parsed.value);
-      sendJson(res, 201, created);
+      sendJson(res, HTTP_STATUS.CREATED, created);
     },
 
     async update(req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
       if (!deps.repositoryConfigured || !deps.service) {
-        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        sendError(res, HTTP_STATUS.NOT_IMPLEMENTED, REPOSITORY_NOT_CONFIGURED);
         return;
       }
       let body: unknown;
@@ -80,35 +80,35 @@ export function create<%= it.entityPascal %>Controller(deps: {
         body = await parseJson(req);
       } catch (err) {
         if (err instanceof JsonBodyError) {
-          sendError(res, 400, err.message);
+          sendError(res, HTTP_STATUS.BAD_REQUEST, err.message);
           return;
         }
         throw err;
       }
       const parsed = parseUpdateInput(body);
       if (!parsed.ok) {
-        sendError(res, 400, parsed.message);
+        sendError(res, HTTP_STATUS.BAD_REQUEST, parsed.message);
         return;
       }
       const updated = deps.service.update(params.id!, parsed.value);
       if (!updated) {
-        sendError(res, 404, "Not found");
+        sendError(res, HTTP_STATUS.NOT_FOUND, "Not found");
         return;
       }
-      sendJson(res, 200, updated);
+      sendJson(res, HTTP_STATUS.OK, updated);
     },
 
     async remove(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
       if (!deps.repositoryConfigured || !deps.service) {
-        sendError(res, 501, REPOSITORY_NOT_CONFIGURED);
+        sendError(res, HTTP_STATUS.NOT_IMPLEMENTED, REPOSITORY_NOT_CONFIGURED);
         return;
       }
       const ok = deps.service.remove(params.id!);
       if (!ok) {
-        sendError(res, 404, "Not found");
+        sendError(res, HTTP_STATUS.NOT_FOUND, "Not found");
         return;
       }
-      res.statusCode = 204;
+      res.statusCode = HTTP_STATUS.NO_CONTENT;
       res.end();
     },
   };
@@ -119,7 +119,7 @@ export type <%= it.entityPascal %>Controller = ReturnType<typeof create<%= it.en
 export function create<%= it.entityPascal %>Controller(deps: { service: <%= it.entityPascal %>Service }) {
   return {
     async status(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
-      sendJson(res, 200, { resource: deps.service.status() });
+      sendJson(res, HTTP_STATUS.OK, { resource: deps.service.status() });
     },
   };
 }

@@ -1,5 +1,5 @@
 {
-  "version": 1,
-  "srcDir": "src",
-  "appEntry": "src/app.ts"
+  "version": <%= it.configVersion %>,
+  "srcDir": "<%= it.srcDir %>",
+  "appEntry": "<%= it.appEntry %>"
 }

@@ -1,3 +1,4 @@
+import { JSON_MIME, OPENAPI_SCHEMA_REF_PREFIX } from "../core/constants.js";
 import type { ResourceField } from "../generators/resource-context.js";
 import type {
   ExtractOptions,
@@ -23,7 +24,7 @@ function resolveSchema(doc: OpenApiDocument, schema: JsonSchema | undefined): Js
   if (!schema) return undefined;
   const ref = schema.$ref;
   if (!ref) return schema;
-  const prefix = "#/components/schemas/";
+  const prefix = OPENAPI_SCHEMA_REF_PREFIX;
   if (!ref.startsWith(prefix)) {
     throw new Error(`Unsupported $ref: ${ref}. Only ${prefix}{Name} is supported.`);
   }
@@ -37,7 +38,7 @@ function fieldsFromRequestSchema(
   method: "post" | "patch" | "put",
 ): ResourceField[] | undefined {
   const op = item[method];
-  const schema = resolveSchema(doc, op?.requestBody?.content?.["application/json"]?.schema);
+  const schema = resolveSchema(doc, op?.requestBody?.content?.[JSON_MIME]?.schema);
   if (!schema?.properties) return undefined;
 
   const requiredSet = new Set(schema.required ?? []);

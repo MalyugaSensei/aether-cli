@@ -1,4 +1,9 @@
 import { join, relative } from "node:path";
+import {
+  APP_DIR,
+  COMPOSITION_BASENAME,
+  MIDDLEWARE_DIR,
+} from "./constants.js";
 import type { ProjectContext } from "./project.js";
 
 export function resourceDirRel(ctx: ProjectContext, resourceKebab: string): string {
@@ -10,7 +15,7 @@ export function resourceFileRel(ctx: ProjectContext, resourceKebab: string, suff
 }
 
 export function middlewareFileRel(ctx: ProjectContext, kebab: string): string {
-  return join(ctx.config.srcDir, "app", "middleware", `${kebab}.ts`);
+  return join(ctx.config.srcDir, APP_DIR, MIDDLEWARE_DIR, `${kebab}.ts`);
 }
 
 /** Import path from app entry file to a module under srcDir (no extension). */
@@ -26,7 +31,7 @@ export function importPathFromAppEntry(ctx: ProjectContext, targetRelFromRoot: s
 }
 
 export function compositionRel(ctx: ProjectContext): string {
-  return join(ctx.config.srcDir, "app", "composition.ts");
+  return join(ctx.config.srcDir, APP_DIR, COMPOSITION_BASENAME);
 }
 
 export function importPathFromComposition(
@@ -34,7 +39,7 @@ export function importPathFromComposition(
   resourceKebab: string,
   fileBase: string,
 ): string {
-  const compDir = join(ctx.root, ctx.config.srcDir, "app");
+  const compDir = join(ctx.root, ctx.config.srcDir, APP_DIR);
   const target = join(ctx.root, ctx.config.srcDir, resourceKebab, `${fileBase}.ts`);
   let rel = relative(compDir, target).replace(/\\/g, "/");
   if (!rel.startsWith(".")) {

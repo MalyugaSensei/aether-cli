@@ -1,7 +1,8 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ChiselError } from "../core/errors.js";
+import { CLI_NAME, EXIT_OK } from "../core/constants.js";
+import { ChiselError, ErrorCode } from "../core/errors.js";
 
 const ESC = "\x1b";
 const bold = (s: string) => `${ESC}[1m${s}${ESC}[0m`;
@@ -19,7 +20,7 @@ export function resolveHelpGuidePath(): string {
   if (existsSync(dev)) {
     return dev;
   }
-  throw new ChiselError("NOT_FOUND", "Help guide missing. Run npm run build.");
+  throw new ChiselError(ErrorCode.NOT_FOUND, "Help guide missing. Run npm run build.");
 }
 
 function paintGuide(raw: string, color: boolean): string {
@@ -39,11 +40,11 @@ function paintGuide(raw: string, color: boolean): string {
       if (/^  ─/.test(line)) {
         return dim(line);
       }
-      if (/^    chisel /.test(line)) {
-        return `    ${green("chisel")}${line.slice("    chisel".length)}`;
+      if (line.startsWith(`    ${CLI_NAME} `)) {
+        return `    ${green(CLI_NAME)}${line.slice(`    ${CLI_NAME}`.length)}`;
       }
-      if (/^      chisel /.test(line)) {
-        return `      ${green("chisel")}${line.slice("      chisel".length)}`;
+      if (line.startsWith(`      ${CLI_NAME} `)) {
+        return `      ${green(CLI_NAME)}${line.slice(`      ${CLI_NAME}`.length)}`;
       }
       return line;
     })
@@ -57,9 +58,9 @@ export function runHelp(options: { json?: boolean; color?: boolean }): number {
 
   if (options.json) {
     console.log(JSON.stringify({ ok: true, guide: text.trim() }, null, 2));
-    return 0;
+    return EXIT_OK;
   }
 
   console.log(paintGuide(text, useColor).trimEnd());
-  return 0;
+  return EXIT_OK;
 }

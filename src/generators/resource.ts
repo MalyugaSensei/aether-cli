@@ -1,15 +1,14 @@
 import type { FileOp } from "../core/plan.js";
 import { pathExists } from "../core/plan.js";
-import { ChiselError } from "../core/errors.js";
+import { ErrorCode, ChiselError } from "../core/errors.js";
+import { GENERATOR, RESOURCE_LAYER } from "../core/constants.js";
 import type { ProjectContext } from "../core/project.js";
-import { renderTemplate } from "../core/render.js";
 import {
   importPathFromAppEntry,
-  importPathFromComposition,
-  middlewareFileRel,
   resourceDirRel,
   resourceFileRel,
   compositionRel,
+  importPathFromComposition,
 } from "../core/paths.js";
 import { addNamedImportIfMissing, appendModuleRoutesSpreadIfMissing } from "../core/ast.js";
 import type { Generator } from "./types.js";
@@ -18,13 +17,7 @@ import {
   moduleFactoryName,
   type ResourceField,
 } from "./resource-context.js";
-import { planResourceTypes } from "./resource-types.js";
-import { planRepository } from "./repository.js";
-import { planService } from "./service.js";
-import { planController } from "./controller.js";
-import { planRoutes } from "./routes.js";
-import { planValidate } from "./validate.js";
-import { planModule } from "./module.js";
+import { planResourceLayer } from "./resource-file.js";
 import { planResourceTests } from "./resource-tests.js";
 
 export interface ResourceOptions {
@@ -40,17 +33,16 @@ export async function planResourceFiles(
   project: ProjectContext,
   tpl: ReturnType<typeof buildResourceContext>,
 ): Promise<FileOp[]> {
-  const ops: FileOp[] = [await planResourceTypes(project, tpl)];
-  const validateOp = await planValidate(project, tpl);
-  if (validateOp) {
-    ops.push(validateOp);
+  const ops: FileOp[] = [await planResourceLayer(project, tpl, RESOURCE_LAYER.types)];
+  if (tpl.crud) {
+    ops.push(await planResourceLayer(project, tpl, RESOURCE_LAYER.validate));
   }
   ops.push(
-    await planRepository(project, tpl),
-    await planService(project, tpl),
-    await planController(project, tpl),
-    await planRoutes(project, tpl),
-    await planModule(project, tpl),
+    await planResourceLayer(project, tpl, RESOURCE_LAYER.repository),
+    await planResourceLayer(project, tpl, RESOURCE_LAYER.service),
+    await planResourceLayer(project, tpl, RESOURCE_LAYER.controller),
+    await planResourceLayer(project, tpl, RESOURCE_LAYER.routes),
+    await planResourceLayer(project, tpl, RESOURCE_LAYER.module),
   );
   return ops;
 }
@@ -83,7 +75,7 @@ export function planAppRouteRegistration(
 }
 
 export const resourceGenerator: Generator<ResourceOptions> = {
-  name: "resource",
+  name: GENERATOR.resource,
   async plan(ctx, options) {
     const tpl = buildResourceContext(
       options.name,
@@ -95,10 +87,10 @@ export const resourceGenerator: Generator<ResourceOptions> = {
 
     if (pathExists(ctx.root, dirRel) && !options.force) {
       if (options.tests) {
-        const validateRel = resourceFileRel(ctx, tpl.resourceKebab, "validate");
+        const validateRel = resourceFileRel(ctx, tpl.resourceKebab, RESOURCE_LAYER.validate);
         if (!pathExists(ctx.root, validateRel)) {
           throw new ChiselError(
-            "VALIDATION",
+            ErrorCode.VALIDATION,
             `Cannot generate tests: ${dirRel} is not a CRUD resource (missing validate).`,
           );
         }
@@ -111,7 +103,7 @@ export const resourceGenerator: Generator<ResourceOptions> = {
         return planResourceTests(ctx, crudTpl);
       }
       throw new ChiselError(
-        "ALREADY_EXISTS",
+        ErrorCode.ALREADY_EXISTS,
         `Resource directory already exists: ${dirRel}. Use --force to overwrite.`,
       );
     }

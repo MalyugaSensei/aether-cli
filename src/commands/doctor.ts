@@ -1,8 +1,15 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
 import { createProjectContext } from "../core/project.js";
+import {
+  CONFIG_FILE,
+  DIST_DIR,
+  EXIT_FAIL,
+  EXIT_OK,
+  MIN_NODE_MAJOR,
+  TEMPLATES_DIRNAME,
+} from "../core/constants.js";
 
 export interface DoctorCheck {
   id: string;
@@ -15,8 +22,11 @@ export function runDoctorChecks(cwd: string): DoctorCheck[] {
   const nodeMajor = Number(process.versions.node.split(".")[0]);
   checks.push({
     id: "node",
-    ok: nodeMajor >= 20,
-    message: nodeMajor >= 20 ? `Node ${process.version}` : `Node ${process.version} is below engines (>=20)`,
+    ok: nodeMajor >= MIN_NODE_MAJOR,
+    message:
+      nodeMajor >= MIN_NODE_MAJOR
+        ? `Node ${process.version}`
+        : `Node ${process.version} is below engines (>=${MIN_NODE_MAJOR})`,
   });
 
   try {
@@ -31,23 +41,23 @@ export function runDoctorChecks(cwd: string): DoctorCheck[] {
   }
 
   const cliRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
-  const templatesDist = join(cliRoot, "dist", "templates", "init");
+  const templatesDist = join(cliRoot, DIST_DIR, TEMPLATES_DIRNAME, "init");
   checks.push({
     id: "templates",
     ok: existsSync(templatesDist),
     message: existsSync(templatesDist)
-      ? "Packaged templates present (dist/templates)"
-      : "Run npm run build to copy templates into dist/",
+      ? `Packaged templates present (${DIST_DIR}/${TEMPLATES_DIRNAME})`
+      : `Run npm run build to copy templates into ${DIST_DIR}/`,
   });
 
-  const configPath = join(cwd, "chisel.config.json");
+  const configPath = join(cwd, CONFIG_FILE);
   if (existsSync(configPath)) {
-    checks.push({ id: "config", ok: true, message: "chisel.config.json found" });
+    checks.push({ id: "config", ok: true, message: `${CONFIG_FILE} found` });
   } else {
     checks.push({
       id: "config",
       ok: true,
-      message: "chisel.config.json missing (defaults apply after init)",
+      message: `${CONFIG_FILE} missing (defaults apply after init)`,
     });
   }
 
@@ -64,5 +74,5 @@ export async function runDoctor(cwd: string, json?: boolean): Promise<number> {
       console.log(`${c.ok ? "ok" : "fail"} ${c.id}: ${c.message}`);
     }
   }
-  return ok ? 0 : 1;
+  return ok ? EXIT_OK : EXIT_FAIL;
 }

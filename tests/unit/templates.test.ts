@@ -68,11 +68,14 @@ describe("templates", () => {
 
   it("R-init-09: loadConfig validates PORT and NODE_ENV", async () => {
     const configSrc = await renderTemplate("init/src-app-config.ts.eta", { projectName: "demo" });
-    expect(configSrc).toContain('process.env.PORT ?? "3000"');
-    expect(configSrc).toContain('process.env.HOST ?? "0.0.0.0"');
-    expect(configSrc).toContain('Invalid PORT');
+    expect(configSrc).toContain("DEFAULT_PORT");
+    expect(configSrc).toContain("3000");
+    expect(configSrc).toContain("DEFAULT_HOST");
+    expect(configSrc).toContain("0.0.0.0");
+    expect(configSrc).toContain("Invalid PORT");
     expect(configSrc).toContain("Invalid NODE_ENV");
-    expect(configSrc).toContain('"10000"');
+    expect(configSrc).toContain("DEFAULT_SHUTDOWN_GRACE_MS");
+    expect(configSrc).toContain("10000");
   });
 
   it("R-crud-01: crud repository is interface only", async () => {

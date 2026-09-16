@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { runInit } from "./commands/init.js";
 import { runGenerate } from "./commands/generate.js";
@@ -6,17 +9,24 @@ import { runDoctor } from "./commands/doctor.js";
 import { runCheck } from "./commands/check.js";
 import { runUpgrade } from "./commands/upgrade.js";
 import { runHelp } from "./commands/help.js";
+import { CLI_NAME, DEFAULT_APP_ENTRY, EXIT_FAIL, GENERATOR, PACKAGE_JSON } from "./core/constants.js";
 import { errorToJson, formatUserError } from "./core/errors.js";
+
+function readCliVersion(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const pkg = JSON.parse(readFileSync(join(here, "..", PACKAGE_JSON), "utf8")) as { version: string };
+  return pkg.version;
+}
 
 const program = new Command();
 
 program
-  .name("chisel")
+  .name(CLI_NAME)
   .description("Generate Node.js backend source code")
-  .version("0.1.0")
+  .version(readCliVersion())
   .option("--json", "Machine-readable JSON output")
   .option("--diff", "With --dry-run, print unified diff preview")
-  .addHelpText("after", "\nFull guide: chisel help\n");
+  .addHelpText("after", `\nFull guide: ${CLI_NAME} help\n`);
 
 program
   .command("init")
@@ -81,18 +91,18 @@ generate
   .option("--dry-run", "Print planned changes without writing")
   .action(async (spec: string, options: { force?: boolean; dryRun?: boolean; strict?: boolean; only?: string[] }) => {
     const globals = program.opts<{ json?: boolean; diff?: boolean }>();
-    await runGenerate("openapi", undefined, { specPath: spec, ...options, json: globals.json, diff: globals.diff });
+    await runGenerate(GENERATOR.openapi, undefined, { specPath: spec, ...options, json: globals.json, diff: globals.diff });
   });
 
 generate
   .command("middleware <name>")
   .description("Generate middleware")
-  .option("--global", "Register in src/app.ts global middleware chain")
+  .option("--global", `Register in ${DEFAULT_APP_ENTRY} global middleware chain`)
   .option("-f, --force", "Overwrite existing middleware file")
   .option("--dry-run", "Print planned changes without writing")
   .action(async (name: string, options: { global?: boolean; force?: boolean; dryRun?: boolean }) => {
     const globals = program.opts<{ json?: boolean; diff?: boolean }>();
-    await runGenerate("middleware", name, { ...options, json: globals.json, diff: globals.diff });
+    await runGenerate(GENERATOR.middleware, name, { ...options, json: globals.json, diff: globals.diff });
   });
 
 generate
@@ -118,7 +128,7 @@ generate
       },
     ) => {
       const globals = program.opts<{ json?: boolean; diff?: boolean }>();
-      await runGenerate("resource", name, { ...options, json: globals.json, diff: globals.diff });
+      await runGenerate(GENERATOR.resource, name, { ...options, json: globals.json, diff: globals.diff });
     },
   );
 
@@ -131,5 +141,5 @@ try {
   } else {
     console.error(formatUserError(err));
   }
-  process.exitCode = 1;
+  process.exitCode = EXIT_FAIL;
 }
