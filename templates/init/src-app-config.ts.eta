@@ -1,0 +1,83 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+export type AppConfig = {
+  port: number;
+  host: string;
+  nodeEnv: "development" | "production" | "test";
+  shutdownGraceMs: number;
+};
+
+const ALLOWED_NODE_ENV = new Set(["development", "production", "test"]);
+
+function stripQuotes(value: string): string {
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+  return value;
+}
+
+/** Loads KEY=VALUE lines from `.env` in cwd; does not override existing process.env. */
+export function loadEnvFile(relativePath = ".env"): void {
+  const abs = join(process.cwd(), relativePath);
+  if (!existsSync(abs)) {
+    return;
+  }
+  const raw = readFileSync(abs, "utf8");
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+    const eq = trimmed.indexOf("=");
+    if (eq <= 0) {
+      continue;
+    }
+    const key = trimmed.slice(0, eq).trim();
+    const value = stripQuotes(trimmed.slice(eq + 1).trim());
+    if (key.length === 0) {
+      continue;
+    }
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
+
+export function loadConfig(): AppConfig {
+  loadEnvFile();
+
+  const portRaw = process.env.PORT ?? "3000";
+  const port = Number(portRaw);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`Invalid PORT: ${portRaw}`);
+  }
+
+  const host = process.env.HOST ?? "0.0.0.0";
+  if (host.length === 0) {
+    throw new Error("HOST must not be empty");
+  }
+
+  const nodeEnv = process.env.NODE_ENV ?? "development";
+  if (!ALLOWED_NODE_ENV.has(nodeEnv)) {
+    throw new Error(`Invalid NODE_ENV: ${nodeEnv}`);
+  }
+
+  const graceRaw = process.env.SHUTDOWN_GRACE_MS ?? "10000";
+  const shutdownGraceMs = Number(graceRaw);
+  if (!Number.isFinite(shutdownGraceMs) || shutdownGraceMs < 0) {
+    throw new Error(`Invalid SHUTDOWN_GRACE_MS: ${graceRaw}`);
+  }
+
+  return {
+    port,
+    host,
+    nodeEnv: nodeEnv as AppConfig["nodeEnv"],
+    shutdownGraceMs,
+  };
+}
+
+export const config = loadConfig();

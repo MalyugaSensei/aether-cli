@@ -1,0 +1,27 @@
+import type { <%= it.entityPascal %><% if (it.crud) { %>, Create<%= it.entityPascal %>Input, Update<%= it.entityPascal %>Input<% } %> } from "./<%= it.resourceKebab %>.types";
+
+// TODO: implement persistence (database, file, etc.)
+
+export const <%= it.resourceCamel %>Repository = {
+<% if (it.crud) { %>
+  findAll(): <%= it.entityPascal %>[] {
+    throw new Error("TODO: implement findAll");
+  },
+
+  findById(_id: string): <%= it.entityPascal %> | undefined {
+    throw new Error("TODO: implement findById");
+  },
+
+  create(_input: Create<%= it.entityPascal %>Input): <%= it.entityPascal %> {
+    throw new Error("TODO: implement create");
+  },
+
+  update(_id: string, _input: Update<%= it.entityPascal %>Input): <%= it.entityPascal %> | undefined {
+    throw new Error("TODO: implement update");
+  },
+
+  delete(_id: string): boolean {
+    throw new Error("TODO: implement delete");
+  },
+<% } %>
+};

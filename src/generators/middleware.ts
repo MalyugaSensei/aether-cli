@@ -28,7 +28,7 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
       throw new Error(`Middleware already exists: ${relPath}. Use --force to overwrite.`);
     }
 
-    const contents = await renderTemplate("middleware/middleware.ts.ejs", {
+    const contents = await renderTemplate("middleware/middleware.ts.eta", {
       name: kebab,
       exportName,
     });

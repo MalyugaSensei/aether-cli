@@ -1,0 +1,14 @@
+import type { Route } from "../app/router";
+import { <%= it.resourceCamel %>Controller } from "./<%= it.resourceKebab %>.controller";
+
+export const <%= it.resourceCamel %>Routes: Route[] = [
+<% if (it.crud) { %>
+  { method: "GET", path: "/<%= it.resourceKebab %>", handler: <%= it.resourceCamel %>Controller.list },
+  { method: "GET", path: "/<%= it.resourceKebab %>/:id", handler: <%= it.resourceCamel %>Controller.getById },
+  { method: "POST", path: "/<%= it.resourceKebab %>", handler: <%= it.resourceCamel %>Controller.create },
+  { method: "PATCH", path: "/<%= it.resourceKebab %>/:id", handler: <%= it.resourceCamel %>Controller.update },
+  { method: "DELETE", path: "/<%= it.resourceKebab %>/:id", handler: <%= it.resourceCamel %>Controller.remove },
+<% } else { %>
+  { method: "GET", path: "/<%= it.resourceKebab %>", handler: <%= it.resourceCamel %>Controller.status },
+<% } %>
+];

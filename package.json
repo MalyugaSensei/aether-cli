@@ -20,16 +20,16 @@
     "node": ">=20"
   },
   "dependencies": {
-    "commander": "^13.1.0",
-    "ejs": "^3.1.10",
-    "prettier": "^3.5.3",
-    "ts-morph": "^25.0.1"
+    "commander": "^15.0.0",
+    "eta": "^4.6.0",
+    "prettier": "^3.9.7",
+    "ts-morph": "^28.0.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@types/ejs": "^3.1.5",
-    "@types/node": "^22.13.10",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
-    "vitest": "^3.0.9"
+    "@types/node": "^22.20.3",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
   }
 }

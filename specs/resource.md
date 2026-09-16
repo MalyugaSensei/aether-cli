@@ -12,6 +12,7 @@
 ## Created files
 
 - `src/<name>/<name>.types.ts`
+- `src/<name>/<name>.validate.ts` (with `--crud` only)
 - `src/<name>/<name>.repository.ts`
 - `src/<name>/<name>.service.ts`
 - `src/<name>/<name>.controller.ts`
@@ -27,10 +28,10 @@
 
 ## Acceptance criteria
 
-- R-resource-01: creates the chain routes → controller → service → repository.
+- R-resource-01: creates the chain routes → controller → service → repository (with `--crud`: includes `*.validate.ts`).
 - R-resource-02: routes are wired into `src/app.ts` automatically.
 - R-resource-03: a second run does not duplicate import or route registration.
 
 ## Out of scope
 
-- ORM, validation libraries.
+- ORM, third-party validation libraries (hand-rolled checks live in `*.validate.ts` for replacement).

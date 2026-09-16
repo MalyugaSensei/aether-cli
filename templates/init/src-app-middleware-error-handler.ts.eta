@@ -1,0 +1,15 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { logger } from "../logger";
+import { sendError } from "../http";
+
+export function handleRequestError(
+  _req: IncomingMessage,
+  res: ServerResponse,
+  err: unknown,
+): void {
+  logger.error("Request failed", err);
+  if (res.headersSent) {
+    return;
+  }
+  sendError(res, 500, "Internal Server Error");
+}

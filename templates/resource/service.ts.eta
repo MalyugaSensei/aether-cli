@@ -1,0 +1,32 @@
+<% if (it.crud) { %>
+import { <%= it.resourceCamel %>Repository } from "./<%= it.resourceKebab %>.repository";
+import type { <%= it.entityPascal %>, Create<%= it.entityPascal %>Input, Update<%= it.entityPascal %>Input } from "./<%= it.resourceKebab %>.types";
+
+export const <%= it.resourceCamel %>Service = {
+  list(): <%= it.entityPascal %>[] {
+    return <%= it.resourceCamel %>Repository.findAll();
+  },
+
+  getById(id: string): <%= it.entityPascal %> | undefined {
+    return <%= it.resourceCamel %>Repository.findById(id);
+  },
+
+  create(input: Create<%= it.entityPascal %>Input): <%= it.entityPascal %> {
+    return <%= it.resourceCamel %>Repository.create(input);
+  },
+
+  update(id: string, input: Update<%= it.entityPascal %>Input): <%= it.entityPascal %> | undefined {
+    return <%= it.resourceCamel %>Repository.update(id, input);
+  },
+
+  remove(id: string): boolean {
+    return <%= it.resourceCamel %>Repository.delete(id);
+  },
+};
+<% } else { %>
+export const <%= it.resourceCamel %>Service = {
+  status(): string {
+    return "<%= it.resourceKebab %>";
+  },
+};
+<% } %>
