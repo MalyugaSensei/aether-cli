@@ -1,0 +1,28 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { createRouter, type Route } from "./app/router";
+import type { Middleware } from "./app/middleware/types";
+import { requestLogger } from "./app/middleware/request-logger";
+import { healthRoutes } from "./health/health.routes";
+
+const middleware: Middleware[] = [requestLogger];
+const routes: Route[] = [...healthRoutes];
+
+export function createApp(): (
+  req: IncomingMessage,
+  res: ServerResponse,
+) => void | Promise<void> {
+  const router = createRouter(routes);
+
+  return async (req, res) => {
+    let index = 0;
+    const run = async (): Promise<void> => {
+      if (index >= middleware.length) {
+        await router(req, res, {});
+        return;
+      }
+      const mw = middleware[index++]!;
+      await mw(req, res, run);
+    };
+    await run();
+  };
+}

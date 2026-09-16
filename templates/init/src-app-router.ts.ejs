@@ -1,0 +1,72 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { sendError } from "./http";
+
+export type Params = Record<string, string>;
+
+export type Handler = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  params: Params,
+) => void | Promise<void>;
+
+export type Route = {
+  method: string;
+  path: string;
+  handler: Handler;
+};
+
+type CompiledRoute = {
+  method: string;
+  regex: RegExp;
+  keys: string[];
+  handler: Handler;
+};
+
+function normalizePath(pathname: string): string {
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1);
+  }
+  return pathname || "/";
+}
+
+function compilePath(path: string): { regex: RegExp; keys: string[] } {
+  const keys: string[] = [];
+  const segments = path.split("/").filter(Boolean);
+  const parts = segments.map((seg) => {
+    if (seg.startsWith(":")) {
+      keys.push(seg.slice(1));
+      return "([^/]+)";
+    }
+    return seg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  });
+  const pattern = "^/" + parts.join("/") + "$";
+  return { regex: new RegExp(pattern), keys };
+}
+
+export function createRouter(routes: Route[]): Handler {
+  const compiled: CompiledRoute[] = routes.map((r) => {
+    const { regex, keys } = compilePath(r.path);
+    return { method: r.method.toUpperCase(), regex, keys, handler: r.handler };
+  });
+
+  return async (req, res, _params) => {
+    const method = (req.method ?? "GET").toUpperCase();
+    const url = new URL(req.url ?? "/", "http://localhost");
+    const pathname = normalizePath(url.pathname);
+
+    for (const route of compiled) {
+      if (route.method !== method) continue;
+      const match = pathname.match(route.regex);
+      if (!match) continue;
+
+      const params: Params = {};
+      route.keys.forEach((key, i) => {
+        params[key] = decodeURIComponent(match[i + 1] ?? "");
+      });
+      await route.handler(req, res, params);
+      return;
+    }
+
+    sendError(res, 404, "Not Found");
+  };
+}

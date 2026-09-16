@@ -1,0 +1,110 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { Params } from "../app/router";
+import { JsonBodyError, readJson, sendError, sendJson } from "../app/http";
+import { <%= resourceCamel %>Service } from "./<%= resourceKebab %>.service";
+<% if (crud) { -%>
+import type { Create<%= entityPascal %>Input, Update<%= entityPascal %>Input } from "./<%= resourceKebab %>.types";
+<% } -%>
+
+<% if (crud) { -%>
+function isCreateInput(body: unknown): body is Create<%= entityPascal %>Input {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "name" in body &&
+    typeof (body as Create<%= entityPascal %>Input).name === "string" &&
+    (body as Create<%= entityPascal %>Input).name.length > 0
+  );
+}
+
+function isUpdateInput(body: unknown): body is Update<%= entityPascal %>Input {
+  if (typeof body !== "object" || body === null) return false;
+  const b = body as Update<%= entityPascal %>Input;
+  if (b.name !== undefined && typeof b.name !== "string") return false;
+  return true;
+}
+
+async function parseJson(req: IncomingMessage): Promise<unknown> {
+  try {
+    return await readJson(req);
+  } catch (err) {
+    if (err instanceof JsonBodyError) {
+      throw err;
+    }
+    throw new JsonBodyError("Invalid JSON body");
+  }
+}
+<% } -%>
+
+export const <%= resourceCamel %>Controller = {
+<% if (crud) { -%>
+  async list(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+    sendJson(res, 200, <%= resourceCamel %>Service.list());
+  },
+
+  async getById(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
+    const item = <%= resourceCamel %>Service.getById(params.id!);
+    if (!item) {
+      sendError(res, 404, "Not found");
+      return;
+    }
+    sendJson(res, 200, item);
+  },
+
+  async create(req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+    let body: unknown;
+    try {
+      body = await parseJson(req);
+    } catch (err) {
+      if (err instanceof JsonBodyError) {
+        sendError(res, 400, err.message);
+        return;
+      }
+      throw err;
+    }
+    if (!isCreateInput(body)) {
+      sendError(res, 400, "Invalid body: name (non-empty string) is required");
+      return;
+    }
+    const created = <%= resourceCamel %>Service.create(body);
+    sendJson(res, 201, created);
+  },
+
+  async update(req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
+    let body: unknown;
+    try {
+      body = await parseJson(req);
+    } catch (err) {
+      if (err instanceof JsonBodyError) {
+        sendError(res, 400, err.message);
+        return;
+      }
+      throw err;
+    }
+    if (!isUpdateInput(body)) {
+      sendError(res, 400, "Invalid body");
+      return;
+    }
+    const updated = <%= resourceCamel %>Service.update(params.id!, body);
+    if (!updated) {
+      sendError(res, 404, "Not found");
+      return;
+    }
+    sendJson(res, 200, updated);
+  },
+
+  async remove(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
+    const ok = <%= resourceCamel %>Service.remove(params.id!);
+    if (!ok) {
+      sendError(res, 404, "Not found");
+      return;
+    }
+    res.statusCode = 204;
+    res.end();
+  },
+<% } else { -%>
+  async status(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+    sendJson(res, 200, { resource: <%= resourceCamel %>Service.status() });
+  },
+<% } -%>
+};

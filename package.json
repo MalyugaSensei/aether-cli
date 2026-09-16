@@ -1,0 +1,35 @@
+{
+  "name": "chisel",
+  "version": "0.1.0",
+  "description": "CLI for generating Node.js backend source code",
+  "type": "module",
+  "bin": {
+    "chisel": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/copy-templates.mjs",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "vitest run tests/integration/e2e-install.test.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "ejs": "^3.1.10",
+    "prettier": "^3.5.3",
+    "ts-morph": "^25.0.1"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}

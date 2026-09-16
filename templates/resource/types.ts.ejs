@@ -1,0 +1,16 @@
+export type <%= entityPascal %> = {
+  id: string;
+<% if (crud) { -%>
+  name: string;
+<% } -%>
+};
+
+<% if (crud) { -%>
+export type Create<%= entityPascal %>Input = {
+  name: string;
+};
+
+export type Update<%= entityPascal %>Input = {
+  name?: string;
+};
+<% } -%>
