@@ -1,15 +1,13 @@
 import { createServer } from "./app/server";
 import { createApp } from "./app";
-
-const port = Number(process.env.PORT ?? 3000);
-const host = process.env.HOST ?? "0.0.0.0";
-const shutdownGraceMs = 10_000;
+import { config } from "./app/config";
+import { logger } from "./app/logger";
 
 const listener = createApp();
 const server = createServer(listener);
 
-server.listen(port, host, () => {
-  console.log(`Server listening on http://${host}:${port}`);
+server.listen(config.port, config.host, () => {
+  logger.info(`Server listening on http://${config.host}:${config.port}`);
 });
 
 let shuttingDown = false;
@@ -19,17 +17,17 @@ function shutdown(signal: string): void {
     return;
   }
   shuttingDown = true;
-  console.log(`Received ${signal}, shutting down...`);
+  logger.info(`Received ${signal}, shutting down...`);
 
   const forceTimer = setTimeout(() => {
     server.closeAllConnections();
-  }, shutdownGraceMs);
+  }, config.shutdownGraceMs);
   forceTimer.unref();
 
   server.close((err) => {
     clearTimeout(forceTimer);
     if (err) {
-      console.error(err);
+      logger.error("Shutdown error", err);
       process.exitCode = 1;
     }
   });

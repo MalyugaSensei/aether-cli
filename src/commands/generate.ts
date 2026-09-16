@@ -1,14 +1,16 @@
 import { commitPlan } from "../core/plan.js";
 import { createProjectContext } from "../core/project.js";
 import { middlewareGenerator } from "../generators/middleware.js";
+import { openapiGenerator } from "../generators/openapi.js";
 import { resourceGenerator } from "../generators/resource.js";
 
 export async function runGenerate(
-  kind: "middleware" | "resource",
-  name: string,
+  kind: "middleware" | "resource" | "openapi",
+  name: string | undefined,
   options: {
     crud?: boolean;
     singular?: string;
+    specPath?: string;
     force?: boolean;
     dryRun?: boolean;
   },
@@ -17,8 +19,16 @@ export async function runGenerate(
 
   let ops;
   if (kind === "middleware") {
+    if (!name) throw new Error("Middleware name is required.");
     ops = await middlewareGenerator.plan(ctx, { name, force: options.force });
+  } else if (kind === "openapi") {
+    if (!options.specPath) throw new Error("OpenAPI spec path is required.");
+    ops = await openapiGenerator.plan(ctx, {
+      specPath: options.specPath,
+      force: options.force,
+    });
   } else {
+    if (!name) throw new Error("Resource name is required.");
     ops = await resourceGenerator.plan(ctx, {
       name,
       crud: options.crud,
@@ -29,6 +39,10 @@ export async function runGenerate(
 
   await commitPlan(ctx.root, ops, { dryRun: options.dryRun, force: options.force });
   if (!options.dryRun) {
-    console.log(`Generated ${kind} "${name}"`);
+    if (kind === "openapi") {
+      console.log(`Generated from OpenAPI "${options.specPath}"`);
+    } else {
+      console.log(`Generated ${kind} "${name}"`);
+    }
   }
 }

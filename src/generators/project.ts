@@ -26,27 +26,38 @@ export const projectGenerator: Generator<InitOptions & { targetRoot: string }> =
     const data = { projectName };
 
     const files: Array<{ rel: string; template: string }> = [
-      { rel: "package.json", template: "init/package.json.ejs" },
-      { rel: "tsconfig.json", template: "init/tsconfig.json.ejs" },
-      { rel: ".gitignore", template: "init/gitignore.ejs" },
-      { rel: "chisel.config.json", template: "init/chisel.config.json.ejs" },
-      { rel: "src/main.ts", template: "init/src-main.ts.ejs" },
-      { rel: "src/app.ts", template: "init/src-app.ts.ejs" },
-      { rel: "src/app/server.ts", template: "init/src-app-server.ts.ejs" },
-      { rel: "src/app/router.ts", template: "init/src-app-router.ts.ejs" },
-      { rel: "src/app/http.ts", template: "init/src-app-http.ts.ejs" },
-      { rel: "src/app/middleware/types.ts", template: "init/src-app-middleware-types.ts.ejs" },
+      { rel: "package.json", template: "init/package.json.eta" },
+      { rel: "tsconfig.json", template: "init/tsconfig.json.eta" },
+      { rel: ".gitignore", template: "init/gitignore.eta" },
+      { rel: "chisel.config.json", template: "init/chisel.config.json.eta" },
+      { rel: ".env.example", template: "init/env.example.eta" },
+      { rel: "src/main.ts", template: "init/src-main.ts.eta" },
+      { rel: "src/app.ts", template: "init/src-app.ts.eta" },
+      { rel: "src/app/config.ts", template: "init/src-app-config.ts.eta" },
+      { rel: "src/app/server.ts", template: "init/src-app-server.ts.eta" },
+      { rel: "src/app/router.ts", template: "init/src-app-router.ts.eta" },
+      { rel: "src/app/http.ts", template: "init/src-app-http.ts.eta" },
+      { rel: "src/app/logger.ts", template: "init/src-app-logger.ts.eta" },
+      { rel: "src/app/middleware/types.ts", template: "init/src-app-middleware-types.ts.eta" },
       {
         rel: "src/app/middleware/request-logger.ts",
-        template: "init/src-app-middleware-request-logger.ts.ejs",
+        template: "init/src-app-middleware-request-logger.ts.eta",
       },
-      { rel: "src/health/health.routes.ts", template: "init/src-health-health.routes.ts.ejs" },
+      {
+        rel: "src/app/middleware/error-handler.ts",
+        template: "init/src-app-middleware-error-handler.ts.eta",
+      },
+      { rel: "src/health/health.routes.ts", template: "init/src-health-health.routes.ts.eta" },
     ];
 
     const ops: FileOp[] = [];
     for (const f of files) {
       const contents = await renderTemplate(f.template, data);
       ops.push({ kind: "create", path: f.rel, contents });
+    }
+    if (!pathExists(root, ".env")) {
+      const envContents = await renderTemplate("init/env.eta", data);
+      ops.push({ kind: "create", path: ".env", contents: envContents });
     }
     return ops;
   },

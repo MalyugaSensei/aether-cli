@@ -25,6 +25,15 @@ const generate = program
   .description("Generate application code");
 
 generate
+  .command("openapi <spec>")
+  .description("Generate CRUD resources from an OpenAPI 3 document")
+  .option("-f, --force", "Overwrite existing resource files")
+  .option("--dry-run", "Print planned changes without writing")
+  .action(async (spec: string, options: { force?: boolean; dryRun?: boolean }) => {
+    await runGenerate("openapi", undefined, { specPath: spec, ...options });
+  });
+
+generate
   .command("middleware <name>")
   .description("Generate middleware")
   .option("-f, --force", "Overwrite existing middleware file")

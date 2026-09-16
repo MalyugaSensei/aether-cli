@@ -1,0 +1,35 @@
+import { config } from "./config";
+
+type LogMeta = Record<string, unknown>;
+
+function formatMessage(level: string, message: string, meta?: LogMeta): string {
+  if (!meta || Object.keys(meta).length === 0) {
+    return `[${level}] ${message}`;
+  }
+  return `[${level}] ${message} ${JSON.stringify(meta)}`;
+}
+
+export const logger = {
+  info(message: string, meta?: LogMeta): void {
+    console.log(formatMessage("INFO", message, meta));
+  },
+
+  error(message: string, err?: unknown): void {
+    if (err instanceof Error) {
+      console.error(formatMessage("ERROR", message, { name: err.name, message: err.message }));
+      return;
+    }
+    if (err !== undefined) {
+      console.error(formatMessage("ERROR", message, { err }));
+      return;
+    }
+    console.error(formatMessage("ERROR", message));
+  },
+
+  debug(message: string, meta?: LogMeta): void {
+    if (config.nodeEnv === "production") {
+      return;
+    }
+    console.debug(formatMessage("DEBUG", message, meta));
+  },
+};

@@ -1,6 +1,7 @@
 import type { Middleware } from "./types";
+import { logger } from "../logger";
 
 export const requestLogger: Middleware = async (req, _res, next) => {
-  console.log(`${req.method ?? "GET"} ${req.url ?? "/"}`);
+  logger.info(`${req.method ?? "GET"} ${req.url ?? "/"}`);
   await next();
 };

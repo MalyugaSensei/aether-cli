@@ -5,7 +5,7 @@ import type { ResourceTemplateContext } from "./resource-context.js";
 
 export async function planResourceTypes(ctx: ResourceTemplateContext): Promise<FileOp> {
   const rel = join("src", ctx.resourceKebab, `${ctx.resourceKebab}.types.ts`);
-  const contents = await renderTemplate("resource/types.ts.ejs", ctx);
+  const contents = await renderTemplate("resource/types.ts.eta", ctx);
   return { kind: "create", path: rel, contents };
 }
 

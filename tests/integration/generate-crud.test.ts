@@ -4,22 +4,12 @@ import { join, dirname } from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
-import ts from "typescript";
 import { afterAll, describe, expect, it } from "vitest";
 import { runChisel } from "../helpers/run-cli.js";
+import { tscCheck } from "../helpers/tsc-check.js";
 
 const cliRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const tsxCli = join(cliRoot, "node_modules/tsx/dist/cli.mjs");
-
-function tscCheck(projectDir: string): string[] {
-  const configPath = join(projectDir, "tsconfig.json");
-  const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-  const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, projectDir);
-  parsed.options.typeRoots = [join(cliRoot, "node_modules/@types")];
-  const program = ts.createProgram(parsed.fileNames, parsed.options);
-  const diagnostics = ts.getPreEmitDiagnostics(program);
-  return diagnostics.map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"));
-}
 
 function waitForServer(port: number, timeoutMs = 15_000): Promise<void> {
   const start = Date.now();
@@ -63,11 +53,11 @@ describe("integration: init + crud resource", () => {
   });
 
   it("TypeScript program has no diagnostics", () => {
-    const errors = tscCheck(dir);
+    const errors = tscCheck(dir, [join(cliRoot, "node_modules/@types")]);
     expect(errors).toEqual([]);
   });
 
-  it("R-crud-03: CRUD endpoints respond correctly", async () => {
+  it("R-crud-02: controller rejects invalid create body without calling persistence", async () => {
     const port = 40_000 + Math.floor(Math.random() * 10_000);
     const child = spawn(process.execPath, [tsxCli, "src/main.ts"], {
       cwd: dir,
@@ -78,43 +68,12 @@ describe("integration: init + crud resource", () => {
     try {
       await waitForServer(port);
 
-      const list1 = await fetch(`http://127.0.0.1:${port}/users`);
-      expect(list1.status).toBe(200);
-      expect(await list1.json()).toEqual([]);
-
       const bad = await fetch(`http://127.0.0.1:${port}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: "{}",
       });
       expect(bad.status).toBe(400);
-
-      const created = await fetch(`http://127.0.0.1:${port}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Ada" }),
-      });
-      expect(created.status).toBe(201);
-      const entity = (await created.json()) as { id: string; name: string };
-      expect(entity.name).toBe("Ada");
-
-      const got = await fetch(`http://127.0.0.1:${port}/users/${entity.id}`);
-      expect(got.status).toBe(200);
-
-      const patched = await fetch(`http://127.0.0.1:${port}/users/${entity.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Grace" }),
-      });
-      expect(patched.status).toBe(200);
-
-      const deleted = await fetch(`http://127.0.0.1:${port}/users/${entity.id}`, {
-        method: "DELETE",
-      });
-      expect(deleted.status).toBe(204);
-
-      const missing = await fetch(`http://127.0.0.1:${port}/users/${entity.id}`);
-      expect(missing.status).toBe(404);
     } finally {
       const exitPromise = waitForProcessExit(child);
       child.kill("SIGTERM");

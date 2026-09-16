@@ -1,0 +1,20 @@
+export type <%= it.entityPascal %> = {
+  id: string;
+<% if (it.crud) { it.fields.forEach(function(field) { %>
+  <%= field.name %>: <%= field.tsType %>;
+<% }); } %>
+};
+
+<% if (it.crud) { %>
+export type Create<%= it.entityPascal %>Input = {
+<% it.fields.filter(function(f) { return f.required; }).forEach(function(field) { %>
+  <%= field.name %>: <%= field.tsType %>;
+<% }); %>
+};
+
+export type Update<%= it.entityPascal %>Input = {
+<% it.fields.forEach(function(field) { %>
+  <%= field.name %>?: <%= field.tsType %>;
+<% }); %>
+};
+<% } %>
