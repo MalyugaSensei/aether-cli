@@ -38,7 +38,7 @@ export function findProjectRoot(startDir: string): string {
     const parent = dirname(dir);
     if (parent === dir) {
       throw new Error(
-        "Not inside a Node.js project (no package.json found). Run `chisel init` first.",
+        "Not inside a Node.js project (no package.json found). Run `aether init` first.",
       );
     }
     dir = parent;
@@ -82,13 +82,13 @@ export function createProjectContext(startDir: string): ProjectContext {
   const appEntryPath = join(root, config.appEntry);
   if (!existsSync(appEntryPath)) {
     throw new Error(
-      `App entry not found at ${config.appEntry}. Run \`chisel init\` or restore ${DEFAULT_APP_ENTRY}.`,
+      `App entry not found at ${config.appEntry}. Run \`aether init\` or restore ${DEFAULT_APP_ENTRY}.`,
     );
   }
   const compositionPath = join(root, config.srcDir, APP_DIR, COMPOSITION_BASENAME);
   if (!existsSync(compositionPath)) {
     throw new Error(
-      `Composition entry not found at ${config.srcDir}/${APP_DIR}/${COMPOSITION_BASENAME}. Run \`chisel init\` or restore it.`,
+      `Composition entry not found at ${config.srcDir}/${APP_DIR}/${COMPOSITION_BASENAME}. Run \`aether init\` or restore it.`,
     );
   }
   return { root, config, appEntryPath };

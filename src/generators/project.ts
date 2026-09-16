@@ -35,7 +35,7 @@ const INIT_FILES: Array<{ rel: string; template: string }> = [
   { rel: PACKAGE_JSON, template: "init/package.json.eta" },
   { rel: TSCONFIG_JSON, template: "init/tsconfig.json.eta" },
   { rel: GITIGNORE, template: "init/gitignore.eta" },
-  { rel: CONFIG_FILE, template: "init/chisel.config.json.eta" },
+  { rel: CONFIG_FILE, template: "init/aether.config.json.eta" },
   { rel: ENV_EXAMPLE_FILE, template: "init/env.example.eta" },
   { rel: DEFAULT_MAIN, template: "init/src-main.ts.eta" },
   { rel: DEFAULT_COMPOSITION, template: "init/src-app-composition.ts.eta" },

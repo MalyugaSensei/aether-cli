@@ -1,9 +1,9 @@
 
   ┌─────────────────────────────────────────────────────────────────────┐
   │                                                                     │
-  │   Chisel · scaffold Node.js HTTP backends in plain TypeScript       │
+  │   Aether · scaffold Node.js HTTP backends in plain TypeScript     │
   │                                                                     │
-  │   Generated apps run without Chisel · zero runtime dependencies     │
+  │   Generated apps run without Aether · zero runtime dependencies   │
   │                                                                     │
   └─────────────────────────────────────────────────────────────────────┘
 
@@ -12,9 +12,9 @@
   ───────────────────────────────────────────────────────────────────────
 
     mkdir my-api && cd my-api
-    chisel init
+    aether init
     npm install
-    chisel g resource users --crud
+    aether g resource users --crud
     npm run dev
 
 
@@ -36,13 +36,13 @@
   COMMANDS
   ───────────────────────────────────────────────────────────────────────
 
-    chisel init [options]
+    aether init [options]
         Scaffold a new project in the current directory.
 
         -f, --force       Overwrite scaffold files (never overwrites .env)
         --dry-run         Show planned files without writing
 
-    chisel generate …   alias: g
+    aether generate …   alias: g
         Generate application source under an initialized project.
 
         g resource <name> [options]
@@ -63,17 +63,17 @@
             -f, --force
             --dry-run
 
-    chisel check
-        Verify project matches Chisel layout (composition, config).
+    aether check
+        Verify project matches Aether layout (composition, config).
 
-    chisel doctor
+    aether doctor
         Node version, project context, packaged templates on disk.
 
-    chisel upgrade
+    aether upgrade
         Human-readable checklist if the project drifted from the contract
         (no automatic code migration).
 
-    chisel help
+    aether help
         This guide.
 
 
@@ -90,22 +90,22 @@
   ───────────────────────────────────────────────────────────────────────
 
     Preview before write
-      chisel init --dry-run --diff
+      aether init --dry-run --diff
 
     CRUD + tests in one step
-      chisel g resource orders --crud --tests
+      aether g resource orders --crud --tests
 
     Add tests after the fact
-      chisel g resource orders --tests
+      aether g resource orders --tests
 
     Auth middleware on every request
-      chisel g middleware auth --global
+      aether g middleware auth --global
 
     From API spec
-      chisel g openapi ./api.yaml --strict
+      aether g openapi ./api.yaml --strict
 
     CI-friendly failure
-      chisel check --json
+      aether check --json
 
 
   NOTES

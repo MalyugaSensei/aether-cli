@@ -8,7 +8,7 @@ export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?
   const suggestions: string[] = [];
 
   if (!existsSync(join(cwd, PACKAGE_JSON))) {
-    suggestions.push("Run chisel init to create a project.");
+    suggestions.push("Run aether init to create a project.");
   } else {
     try {
       loadConfig(cwd);
@@ -18,10 +18,10 @@ export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?
 
     const comp = compositionRel({ root: cwd, config: loadConfig(cwd), appEntryPath: "" });
     if (!existsSync(join(cwd, comp))) {
-      suggestions.push(`Add ${comp} (restore from latest chisel init template).`);
+      suggestions.push(`Add ${comp} (restore from latest aether init template).`);
     }
     if (!existsSync(join(cwd, DEFAULT_APP_ENTRY))) {
-      suggestions.push(`Restore ${DEFAULT_APP_ENTRY} from latest chisel init template.`);
+      suggestions.push(`Restore ${DEFAULT_APP_ENTRY} from latest aether init template.`);
     }
   }
 
@@ -31,7 +31,7 @@ export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?
   if (options.json) {
     console.log(JSON.stringify(payload, null, 2));
   } else if (ok) {
-    console.log("Project matches current Chisel composition contract.");
+    console.log("Project matches current Aether composition contract.");
   } else {
     console.log("Upgrade suggestions:");
     for (const s of suggestions) {

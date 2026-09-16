@@ -1,8 +1,8 @@
 /** Canonical layout and contract values. Do not scatter these literals. */
 
-export const CLI_NAME = "chisel";
+export const CLI_NAME = "aether";
 
-export const CONFIG_FILE = "chisel.config.json";
+export const CONFIG_FILE = "aether.config.json";
 export const CONFIG_VERSION = 1;
 export const PACKAGE_JSON = "package.json";
 export const TSCONFIG_JSON = "tsconfig.json";

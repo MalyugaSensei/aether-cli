@@ -104,7 +104,7 @@ export async function applyMaterializedPlan(root: string, materialized: Material
         existed: existsSync(abs),
       });
       mkdirSync(dirname(abs), { recursive: true });
-      const tmp = `${abs}.chisel.tmp`;
+      const tmp = `${abs}.aether.tmp`;
       writeFileSync(tmp, op.contents, "utf8");
       renameSync(tmp, abs);
     }

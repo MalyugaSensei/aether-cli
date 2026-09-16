@@ -1,8 +1,8 @@
-# AGENTS.md — Chisel CLI
+# AGENTS.md — Aether CLI
 
 ## Core invariant
 
-Chisel is a **source code scaffolding** tool, not a runtime framework. The generated application runs without Chisel installed. No template under `templates/` may add `chisel` to `dependencies` or dependency-like fields in the generated `package.json`.
+Aether is a **source code scaffolding** tool, not a runtime framework. The generated application runs without Aether installed. No template under `templates/` may add `aether` or `aether-cli` to `dependencies` or dependency-like fields in the generated `package.json`.
 
 ## Commands
 

@@ -2,12 +2,12 @@
 
 ## Command and flags
 
-- `chisel generate resource <name>` / `chisel g resource <name>`
+- `aether generate resource <name>` / `aether g resource <name>`
 - `--crud`, `--singular <name>`, `--tests`, `--force`, `--dry-run`
 
 ## Preconditions
 
-- Project initialized with Chisel (`src/app/composition.ts` present).
+- Project initialized with Aether (`src/app/composition.ts` present).
 
 ## Created files
 

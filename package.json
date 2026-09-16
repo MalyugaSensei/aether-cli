@@ -1,5 +1,5 @@
 {
-  "name": "chisel-js",
+  "name": "aether-cli",
   "version": "0.1.0",
   "description": "CLI for scaffolding Node.js HTTP backends in TypeScript",
   "keywords": [
@@ -9,21 +9,22 @@
     "nodejs",
     "typescript",
     "http",
-    "backend"
+    "backend",
+    "aether"
   ],
   "license": "MIT",
   "author": "MalyugaSensei",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MalyugaSensei/chisel-js.git"
+    "url": "git+https://github.com/MalyugaSensei/aether-cli.git"
   },
   "bugs": {
-    "url": "https://github.com/MalyugaSensei/chisel-js/issues"
+    "url": "https://github.com/MalyugaSensei/aether-cli/issues"
   },
-  "homepage": "https://github.com/MalyugaSensei/chisel-js#readme",
+  "homepage": "https://github.com/MalyugaSensei/aether-cli#readme",
   "type": "module",
   "bin": {
-    "chisel": "dist/cli.js"
+    "aether": "dist/cli.js"
   },
   "files": [
     "dist"
