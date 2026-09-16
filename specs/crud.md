@@ -2,7 +2,7 @@
 
 ## Command and flags
 
-- `chisel g resource <name> --crud`
+- `aether g resource <name> --crud`
 
 ## Preconditions
 
@@ -11,7 +11,7 @@
 ## Schema
 
 - Manual `g resource --crud` generates an **empty** domain schema: entity type has only `id`; create accepts `{}`; update returns validation error `No update fields configured` until the user edits types/validate.
-- Typed domain fields are generated automatically only via `chisel g openapi <spec>`.
+- Typed domain fields are generated automatically only via `aether g openapi <spec>`.
 
 ## Created files
 

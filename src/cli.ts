@@ -40,7 +40,7 @@ program
 
 program
   .command("upgrade")
-  .description("Report migration steps toward current Chisel contract")
+  .description("Report migration steps toward current Aether contract")
   .option("--dry-run", "Report only (default)")
   .action(async (options: { dryRun?: boolean }) => {
     const globals = program.opts<{ json?: boolean }>();
@@ -60,7 +60,7 @@ program
 
 program
   .command("check")
-  .description("Verify Chisel project structure")
+  .description("Verify Aether project structure")
   .action(async () => {
     const globals = program.opts<{ json?: boolean }>();
     process.exitCode = await runCheck(process.cwd(), { json: globals.json });

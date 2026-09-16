@@ -2,11 +2,11 @@
 
 ## Command and flags
 
-- `chisel upgrade --dry-run`
+- `aether upgrade --dry-run`
 
 ## Behavior
 
-- Reports whether the project matches the current Chisel init/composition contract (read-only).
+- Reports whether the project matches the current Aether init/composition contract (read-only).
 - Does not write files in `--dry-run`.
 
 ## Acceptance criteria

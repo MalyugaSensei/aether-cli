@@ -2,7 +2,7 @@
 
 ## Command and flags
 
-- `chisel help`
+- `aether help`
 - `--no-color` — plain text (when stdout is a TTY, guide is lightly styled)
 
 ## Preconditions
@@ -16,7 +16,7 @@
 
 ## Acceptance criteria
 
-- R-help-01: `chisel help` exits 0 and includes quick-start `chisel init`.
+- R-help-01: `aether help` exits 0 and includes quick-start `aether init`.
 - R-help-02: built CLI resolves `dist/help/guide.txt`.
 
 ## Out of scope

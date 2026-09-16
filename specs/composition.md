@@ -27,4 +27,4 @@ Generated apps wire HTTP resources through an explicit composition root. No DI c
 
 ## Out of scope
 
-- Auto-discovery of repository implementations, ORM adapters, runtime Chisel.
+- Auto-discovery of repository implementations, ORM adapters, runtime Aether.

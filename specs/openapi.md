@@ -2,12 +2,12 @@
 
 ## Command and flags
 
-- `chisel generate openapi <spec>` / `chisel g openapi <spec>`
+- `aether generate openapi <spec>` / `aether g openapi <spec>`
 - `--force`, `--dry-run`, `--strict`, `--only <names>` (comma-separated)
 
 ## Preconditions
 
-- Project initialized with Chisel.
+- Project initialized with Aether.
 - OpenAPI **3.0.x** document (JSON or YAML).
 
 ## Behavior

@@ -2,13 +2,13 @@
 
 ## Command and flags
 
-- `chisel generate middleware <name>` / `chisel g middleware <name>`
+- `aether generate middleware <name>` / `aether g middleware <name>`
 - `--global` — register in `src/app.ts` global `middleware` array
 - `--force`, `--dry-run`
 
 ## Preconditions
 
-- Project initialized with Chisel (`package.json` + `src/app.ts`).
+- Project initialized with Aether (`package.json` + `src/app.ts`).
 
 ## Created files
 

@@ -2,7 +2,7 @@
 
 ## Command and flags
 
-- `chisel init`
+- `aether init`
 - `--force` — overwrite existing init template files
 - `--dry-run` — print the plan only
 
@@ -15,7 +15,7 @@
 - `package.json`
 - `tsconfig.json`
 - `.gitignore`
-- `chisel.config.json`
+- `aether.config.json`
 - `.env.example`
 - `.env` — only when `.env` is not already present in the target directory
 - `src/main.ts`

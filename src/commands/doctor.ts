@@ -31,7 +31,7 @@ export function runDoctorChecks(cwd: string): DoctorCheck[] {
 
   try {
     createProjectContext(cwd);
-    checks.push({ id: "project", ok: true, message: "Chisel project context loads" });
+    checks.push({ id: "project", ok: true, message: "Aether project context loads" });
   } catch (err) {
     checks.push({
       id: "project",
