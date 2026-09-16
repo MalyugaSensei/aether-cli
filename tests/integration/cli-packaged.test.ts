@@ -31,12 +31,12 @@ describe("packaged CLI", () => {
   it("R-packaging-01: dist cli init succeeds", async () => {
     const dir = mkdtempSync(join(tmpdir(), "chisel-pack-"));
     const r = await runBuilt(["init"], dir);
-    expect(r.code).toBe(0);
+    expect(r.code, r.stderr || r.stdout).toBe(0);
   });
 
   it("R-help-02: dist cli prints bundled guide", async () => {
     const r = await runBuilt(["help", "--no-color"], cliRoot);
-    expect(r.code).toBe(0);
+    expect(r.code, r.stderr || r.stdout).toBe(0);
     expect(r.stdout).toMatch(/chisel init/);
     expect(r.stdout).toMatch(/QUICK START/);
   });
