@@ -13,7 +13,20 @@ export const HTTP_STATUS = {
   NOT_IMPLEMENTED: 501,
 } as const;
 
-const JSON_CONTENT_TYPE = "application/json";
+export const HTTP_METHOD = {
+  GET: "GET",
+  POST: "POST",
+  PUT: "PUT",
+  PATCH: "PATCH",
+  DELETE: "DELETE",
+  OPTIONS: "OPTIONS",
+} as const;
+
+export type HttpMethod = (typeof HTTP_METHOD)[keyof typeof HTTP_METHOD];
+
+export const HTTP_CONTENT_TYPE = {
+  JSON: "application/json",
+} as const;
 
 export async function readJson<T = unknown>(
   req: IncomingMessage,
@@ -52,7 +65,7 @@ export class JsonBodyError extends Error {
 
 export function sendJson(res: ServerResponse, status: number, data: unknown): void {
   res.statusCode = status;
-  res.setHeader("Content-Type", JSON_CONTENT_TYPE);
+  res.setHeader("Content-Type", HTTP_CONTENT_TYPE.JSON);
   res.end(JSON.stringify(data));
 }
 

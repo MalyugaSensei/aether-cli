@@ -1,9 +1,9 @@
 import type { Route } from "../app/router";
-import { sendJson, HTTP_STATUS } from "../app/http";
+import { HTTP_METHOD, sendJson, HTTP_STATUS } from "../app/http";
 
 export const healthRoutes: Route[] = [
   {
-    method: "GET",
+    method: HTTP_METHOD.GET,
     path: "/health",
     handler: (_req, res) => {
       sendJson(res, HTTP_STATUS.OK, { status: "ok" });

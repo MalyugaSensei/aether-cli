@@ -6,6 +6,7 @@ Minimal HTTP router in the generated app (`src/app/router.ts`).
 
 ## Behavior
 
+- `Route.method` is typed as `HttpMethod` from `src/app/http.ts`.
 - Match method + path; `:param` → RegExp, decode URI component.
 - Trailing slash: normalize (no trailing slash for matching).
 - More specific static segments do not conflict with a param at the same level (route registration order).

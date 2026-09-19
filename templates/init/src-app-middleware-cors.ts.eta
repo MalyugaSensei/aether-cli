@@ -1,8 +1,16 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { config } from "../config";
+import { HTTP_METHOD, HTTP_STATUS } from "../http";
 import type { Middleware } from "./types";
 
-const ALLOW_METHODS = "GET, POST, PATCH, PUT, DELETE, OPTIONS";
+const ALLOW_METHODS = [
+  HTTP_METHOD.GET,
+  HTTP_METHOD.POST,
+  HTTP_METHOD.PATCH,
+  HTTP_METHOD.PUT,
+  HTTP_METHOD.DELETE,
+  HTTP_METHOD.OPTIONS,
+].join(", ");
 const ALLOW_HEADERS = "Content-Type, Authorization";
 
 function allowedOrigin(requestOrigin: string | undefined): string | undefined {
@@ -31,12 +39,12 @@ export const cors: Middleware = async (req: IncomingMessage, res: ServerResponse
     }
   }
 
-  if ((req.method ?? "GET").toUpperCase() === "OPTIONS") {
+  if ((req.method ?? HTTP_METHOD.GET).toUpperCase() === HTTP_METHOD.OPTIONS) {
     if (config.corsOrigin.length === 0) {
       await next();
       return;
     }
-    res.statusCode = 204;
+    res.statusCode = HTTP_STATUS.NO_CONTENT;
     res.end();
     return;
   }

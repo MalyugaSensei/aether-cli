@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { sendError, HTTP_STATUS } from "./http";
+import { sendError, HTTP_METHOD, HTTP_STATUS, type HttpMethod } from "./http";
 
 export type Params = Record<string, string>;
 
@@ -10,13 +10,13 @@ export type Handler = (
 ) => void | Promise<void>;
 
 export type Route = {
-  method: string;
+  method: HttpMethod;
   path: string;
   handler: Handler;
 };
 
 type CompiledRoute = {
-  method: string;
+  method: HttpMethod;
   regex: RegExp;
   keys: string[];
   handler: Handler;
@@ -46,11 +46,11 @@ function compilePath(path: string): { regex: RegExp; keys: string[] } {
 export function createRouter(routes: Route[]): Handler {
   const compiled: CompiledRoute[] = routes.map((r) => {
     const { regex, keys } = compilePath(r.path);
-    return { method: r.method.toUpperCase(), regex, keys, handler: r.handler };
+    return { method: r.method, regex, keys, handler: r.handler };
   });
 
   return async (req, res, _params) => {
-    const method = (req.method ?? "GET").toUpperCase();
+    const method = (req.method ?? HTTP_METHOD.GET).toUpperCase() as HttpMethod;
     const url = new URL(req.url ?? "/", "http://localhost");
     const pathname = normalizePath(url.pathname);
 

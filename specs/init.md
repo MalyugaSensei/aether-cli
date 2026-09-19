@@ -62,6 +62,7 @@
 - R-init-14: when `BEARER_TOKEN` is set, requests other than `OPTIONS` and `GET /health` require `Authorization: Bearer <token>` or `401` `{ error: "Unauthorized" }`; when unset, bearer middleware is a no-op.
 - R-init-15: `src/app/list.ts` exports `ListQuery` and `parseListQuery`; defaults `limit=50`, `offset=0`; `limit` must be 1..100.
 - R-init-16: `aether init --dry-run` exits 0 and does not write scaffold files to the target directory.
+- R-init-17: `src/app/http.ts` exports `HTTP_STATUS`, `HTTP_METHOD` (`GET` | `POST` | `PUT` | `PATCH` | `DELETE` | `OPTIONS`), and `HTTP_CONTENT_TYPE`; init scaffold (health routes, CORS, bearer, body-limit, router default method) uses these constants instead of raw method/status literals; CORS preflight responds with `HTTP_STATUS.NO_CONTENT`.
 
 ## Out of scope
 

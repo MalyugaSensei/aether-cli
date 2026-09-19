@@ -41,7 +41,7 @@
 - R-crud-01: `*.repository.ts` exports only a repository interface (no class/function implementation in that file).
 - R-crud-02: controller returns 404 for missing id when repository is wired; 400 for invalid JSON/body (body rules in `*.validate.ts`); 501 when repository is not wired.
 - R-crud-04: `*.validate.ts` exports `parseCreateInput` / `parseUpdateInput`; controller does not embed field guards.
-- R-crud-03: all five endpoints are registered in routes.
+- R-crud-03: all five endpoints are registered in routes via `HTTP_METHOD.*` from `src/app/http.ts`.
 - R-crud-05: manual `--crud` without OpenAPI produces entity `{ id: string }` only.
 - R-crud-06: `findAll` / `list` take `ListQuery`; collection handler calls `parseListQuery`.
 

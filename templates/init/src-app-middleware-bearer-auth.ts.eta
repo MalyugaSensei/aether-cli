@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { config } from "../config";
-import { HTTP_STATUS, sendError } from "../http";
+import { HTTP_METHOD, HTTP_STATUS, sendError } from "../http";
 import type { Middleware } from "./types";
 
 function tokensEqual(left: string, right: string): boolean {
@@ -41,8 +41,11 @@ export const bearerAuth: Middleware = async (
     return;
   }
 
-  const method = (req.method ?? "GET").toUpperCase();
-  if (method === "OPTIONS" || (method === "GET" && requestPath(req) === "/health")) {
+  const method = (req.method ?? HTTP_METHOD.GET).toUpperCase();
+  if (
+    method === HTTP_METHOD.OPTIONS ||
+    (method === HTTP_METHOD.GET && requestPath(req) === "/health")
+  ) {
     await next();
     return;
   }

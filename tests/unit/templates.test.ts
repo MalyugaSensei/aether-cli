@@ -147,11 +147,41 @@ describe("templates", () => {
       fields: [],
       routePrefix: "",
     });
-    expect(src).toContain('method: "GET"');
-    expect(src).toContain('method: "POST"');
-    expect(src).toContain('method: "PATCH"');
-    expect(src).toContain('method: "DELETE"');
+    expect(src).toContain("HTTP_METHOD.GET");
+    expect(src).toContain("HTTP_METHOD.POST");
+    expect(src).toContain("HTTP_METHOD.PATCH");
+    expect(src).toContain("HTTP_METHOD.DELETE");
     expect((src.match(/method:/g) ?? []).length).toBe(5);
+  });
+
+  it("R-init-17: http exports global HTTP constants and scaffold uses them", async () => {
+    const http = await renderTemplate("init/src-app-http.ts.eta", { projectName: "demo" });
+    expect(http).toContain("export const HTTP_STATUS");
+    expect(http).toContain("export const HTTP_METHOD");
+    expect(http).toContain("export const HTTP_CONTENT_TYPE");
+    expect(http).toContain("export type HttpMethod");
+
+    const health = await renderTemplate("init/src-health-health.routes.ts.eta", {
+      projectName: "demo",
+    });
+    expect(health).toContain("HTTP_METHOD.GET");
+    expect(health).not.toMatch(/method:\s*"GET"/);
+
+    const cors = await renderTemplate("init/src-app-middleware-cors.ts.eta", {
+      projectName: "demo",
+    });
+    expect(cors).toContain("HTTP_METHOD.OPTIONS");
+    expect(cors).toContain("HTTP_STATUS.NO_CONTENT");
+    expect(cors).not.toMatch(/statusCode\s*=\s*204/);
+
+    const bodyLimit = await renderTemplate("init/src-app-middleware-body-limit.ts.eta", {
+      projectName: "demo",
+    });
+    expect(bodyLimit).toContain("HTTP_METHOD.POST");
+
+    const router = await renderTemplate("init/src-app-router.ts.eta", { projectName: "demo" });
+    expect(router).toContain("HTTP_METHOD.GET");
+    expect(router).toContain("HttpMethod");
   });
 
   it("R-crud-06: list query is wired through repository service and controller", async () => {

@@ -1,16 +1,20 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { config } from "../config";
-import { HTTP_STATUS, sendError } from "../http";
+import { HTTP_METHOD, HTTP_STATUS, sendError, type HttpMethod } from "../http";
 import type { Middleware } from "./types";
 
-const BODY_METHODS = new Set(["POST", "PUT", "PATCH"]);
+const BODY_METHODS = new Set<HttpMethod>([
+  HTTP_METHOD.POST,
+  HTTP_METHOD.PUT,
+  HTTP_METHOD.PATCH,
+]);
 
 export const bodyLimit: Middleware = async (
   req: IncomingMessage,
   res: ServerResponse,
   next,
 ) => {
-  const method = (req.method ?? "GET").toUpperCase();
+  const method = (req.method ?? HTTP_METHOD.GET).toUpperCase() as HttpMethod;
   if (!BODY_METHODS.has(method)) {
     await next();
     return;

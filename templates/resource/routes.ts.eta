@@ -1,17 +1,18 @@
 <% const basePath = it.routePrefix ? it.routePrefix + "/" + it.resourceKebab : "/" + it.resourceKebab; %>
+import { HTTP_METHOD } from "../app/http";
 import type { Route } from "../app/router";
 import type { <%= it.entityPascal %>Controller } from "./<%= it.resourceKebab %>.controller";
 
 export function create<%= it.entityPascal %>Routes(controller: <%= it.entityPascal %>Controller): Route[] {
   return [
 <% if (it.crud) { %>
-    { method: "GET", path: "<%= basePath %>", handler: controller.list },
-    { method: "GET", path: "<%= basePath %>/:id", handler: controller.getById },
-    { method: "POST", path: "<%= basePath %>", handler: controller.create },
-    { method: "PATCH", path: "<%= basePath %>/:id", handler: controller.update },
-    { method: "DELETE", path: "<%= basePath %>/:id", handler: controller.remove },
+    { method: HTTP_METHOD.GET, path: "<%= basePath %>", handler: controller.list },
+    { method: HTTP_METHOD.GET, path: "<%= basePath %>/:id", handler: controller.getById },
+    { method: HTTP_METHOD.POST, path: "<%= basePath %>", handler: controller.create },
+    { method: HTTP_METHOD.PATCH, path: "<%= basePath %>/:id", handler: controller.update },
+    { method: HTTP_METHOD.DELETE, path: "<%= basePath %>/:id", handler: controller.remove },
 <% } else { %>
-    { method: "GET", path: "<%= basePath %>", handler: controller.status },
+    { method: HTTP_METHOD.GET, path: "<%= basePath %>", handler: controller.status },
 <% } %>
   ];
 }
