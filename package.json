@@ -43,7 +43,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "vitest run tests/integration/e2e-install.test.ts",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test",
+    "release:patch": "npm version patch",
+    "release:minor": "npm version minor",
+    "release:major": "npm version major"
   },
   "engines": {
     "node": ">=20"

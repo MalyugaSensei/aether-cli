@@ -35,6 +35,19 @@ npm run dev -- g resource users --crud
 
 Behavior changes without updating the spec in the same change are not accepted.
 
+## Release (npm)
+
+Publishing is triggered by a git tag `v*.*.*` (see `.github/workflows/release.yml`). Tag must match `package.json` `version`.
+
+Bump version, commit, and create the tag in one step:
+
+```bash
+npm run release:patch   # or release:minor / release:major
+git push origin HEAD --follow-tags
+```
+
+`npm version` updates `package.json` and `package-lock.json`, commits, and tags `vX.Y.Z` (prefix `v` is npm default). CI runs tests and `npm publish --provenance`. Prefer Trusted Publishing on npm; local `npm publish` is optional.
+
 ## Documentation
 
 - `AGENTS.md` and `specs/` are for CLI development; they are not published in the npm package (`files: ["dist"]`).
