@@ -1,4 +1,4 @@
-# @malyuga/aether-cli
+# aether-cli
 
 Aether scaffolds **plain TypeScript** HTTP backends on Node’s built-in `http` module. It writes source files you own and edit by hand—it is not a runtime framework. After generation, your app runs with **no Aether dependency** and **no npm packages in `dependencies`**.
 
@@ -9,6 +9,15 @@ Requires **Node.js 20+**.
 Starting from an empty directory means rebuilding the same server, routing, configuration, and error handling every time. Starting from a framework means adopting its runtime, conventions, and upgrade path.
 
 Aether takes the middle ground: it generates a small, working backend and then gets out of the way. The result is ordinary TypeScript with explicit wiring, replaceable parts, and no framework-specific runtime. You can keep the generated structure, change it, or remove any part of it without fighting the tool.
+
+## When to use Aether
+
+- You want a **new TypeScript HTTP API** on **`node:http`**, with source files you edit directly
+- You prefer an **explicit composition root** (`composition.ts`) over a runtime framework
+- You need **CRUD scaffolding** by hand or from an **OpenAPI** specification
+- The generated app should ship with **zero runtime npm dependencies**
+
+Concise context for coding agents: [llms.txt](./llms.txt).
 
 ## Quick start
 

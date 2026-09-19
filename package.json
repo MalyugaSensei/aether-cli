@@ -1,16 +1,19 @@
 {
   "name": "@malyuga/aether-cli",
   "version": "0.1.0",
-  "description": "CLI for scaffolding Node.js HTTP backends in TypeScript",
+  "description": "Scaffold plain TypeScript HTTP backends on node:http with zero runtime dependencies; OpenAPI-to-CRUD and explicit composition wiring",
   "keywords": [
+    "aether",
     "cli",
     "scaffold",
     "generator",
-    "nodejs",
-    "typescript",
-    "http",
-    "backend",
-    "aether"
+    "backend-scaffold",
+    "typescript-backend",
+    "node-http",
+    "openapi",
+    "crud-generator",
+    "zero-runtime-dependencies",
+    "composition-root"
   ],
   "license": "MIT",
   "author": "MalyugaSensei",
@@ -27,7 +30,8 @@
     "aether": "dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "publishConfig": {
     "access": "public"

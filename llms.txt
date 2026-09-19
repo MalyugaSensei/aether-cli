@@ -1,0 +1,57 @@
+# Aether CLI
+
+> Source scaffolder for plain TypeScript HTTP backends on Node's built-in `http` module. Generated apps have zero runtime npm dependencies and do not require Aether at runtime.
+
+## When to use
+
+- Starting a new Node.js backend with TypeScript and `node:http`, not a runtime web framework
+- You want generated source you own: router, middleware, composition root, CRUD layers
+- Generating CRUD modules from an OpenAPI 3.0 specification
+- Production deploy should be `tsc` + `node` with no application `dependencies`
+
+## Install
+
+```bash
+npm i -g @malyuga/aether-cli
+```
+
+Requires Node.js 20+.
+
+## Quick start
+
+```bash
+mkdir my-api && cd my-api
+aether init
+npm install
+aether g resource users --crud
+npm run dev
+```
+
+After `init`, `GET /health` works. CRUD routes are registered in `src/app/composition.ts`, but the generated repository is an interface only. Until you pass a real implementation to `createUserModule({ repository: … })`, CRUD returns HTTP 501 with `{ "error": "Repository not configured" }`.
+
+## Commands
+
+- `aether init` — scaffold project in the current directory (`-f`, `--dry-run`, `--diff`, `--json`)
+- `aether g resource <name>` — resource module; `--crud` for full stack; `--tests` for fake repo + tests
+- `aether g middleware <name>` — middleware stub; `--global` registers in `src/app.ts`
+- `aether g openapi <spec>` — CRUD resources from OpenAPI 3.0 JSON/YAML
+- `aether check` — verify composition and config layout
+- `aether doctor` — Node version, project context, packaged templates
+- `aether upgrade` — read-only drift report; does not rewrite code
+- `aether help` — full terminal guide
+
+Alias: `g` for `generate`. Global flags: `--json`, `--diff` (with `--dry-run`).
+
+## Generated app notes
+
+- CommonJS; local imports without file extensions
+- Optional Bearer auth via `BEARER_TOKEN` in `.env` (wired by `init`; health stays public)
+- OpenAPI re-run without `--force` updates `*.types.ts` and `*.validate.ts` only
+
+## Documentation
+
+- [README](https://github.com/MalyugaSensei/aether-cli/blob/main/README.md): user-facing overview and examples
+- [npm package](https://www.npmjs.com/package/@malyuga/aether-cli): install and registry metadata
+- [Repository](https://github.com/MalyugaSensei/aether-cli): source and issues
+
+This file is for external coding agents. Repository `AGENTS.md` is for contributors developing the CLI itself, not for end-user scaffolding.
