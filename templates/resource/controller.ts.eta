@@ -4,6 +4,7 @@ import { JsonBodyError, readJson, sendError, sendJson, HTTP_STATUS } from "../ap
 import type { <%= it.entityPascal %>Service } from "./<%= it.resourceKebab %>.service";
 <% if (it.crud) { %>
 import { parseCreateInput, parseUpdateInput } from "./<%= it.resourceKebab %>.validate";
+import { parseListQuery } from "../app/list";
 <% } %>
 
 const REPOSITORY_NOT_CONFIGURED = "Repository not configured";
@@ -25,12 +26,18 @@ export function create<%= it.entityPascal %>Controller(deps: {
   repositoryConfigured: boolean;
 }) {
   return {
-    async list(_req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+    async list(req: IncomingMessage, res: ServerResponse, _params: Params): Promise<void> {
+      const url = new URL(req.url ?? "/", "http://localhost");
+      const parsed = parseListQuery(url.searchParams);
+      if (!parsed.ok) {
+        sendError(res, HTTP_STATUS.BAD_REQUEST, parsed.message);
+        return;
+      }
       if (!deps.repositoryConfigured || !deps.service) {
         sendError(res, HTTP_STATUS.NOT_IMPLEMENTED, REPOSITORY_NOT_CONFIGURED);
         return;
       }
-      sendJson(res, HTTP_STATUS.OK, deps.service.list());
+      sendJson(res, HTTP_STATUS.OK, deps.service.list(parsed.value));
     },
 
     async getById(_req: IncomingMessage, res: ServerResponse, params: Params): Promise<void> {
@@ -56,7 +63,7 @@ export function create<%= it.entityPascal %>Controller(deps: {
         body = await parseJson(req);
       } catch (err) {
         if (err instanceof JsonBodyError) {
-          sendError(res, HTTP_STATUS.BAD_REQUEST, err.message);
+          sendError(res, err.status, err.message);
           return;
         }
         throw err;
@@ -80,7 +87,7 @@ export function create<%= it.entityPascal %>Controller(deps: {
         body = await parseJson(req);
       } catch (err) {
         if (err instanceof JsonBodyError) {
-          sendError(res, HTTP_STATUS.BAD_REQUEST, err.message);
+          sendError(res, err.status, err.message);
           return;
         }
         throw err;

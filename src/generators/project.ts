@@ -5,18 +5,24 @@ import { renderTemplate } from "../core/render.js";
 import type { Generator } from "./types.js";
 import {
   APP_DIR,
+  APP_SCAFFOLD,
   CONFIG_FILE,
   CONFIG_VERSION,
   DEFAULT_APP_ENTRY,
   DEFAULT_COMPOSITION,
   DEFAULT_MAIN,
+  DEFAULT_PROJECT_NAME,
   DEFAULT_SRC_DIR,
   ENV_EXAMPLE_FILE,
   ENV_FILE,
+  FILE_OP,
   GENERATOR,
   GITIGNORE,
   HEALTH_DIR,
+  HEALTH_ROUTES_BASENAME,
+  INIT_TEMPLATE,
   MIDDLEWARE_DIR,
+  MIDDLEWARE_SCAFFOLD,
   PACKAGE_JSON,
   TSCONFIG_JSON,
 } from "../core/constants.js";
@@ -32,31 +38,44 @@ const APP_REL = `${DEFAULT_SRC_DIR}/${APP_DIR}`;
 const MIDDLEWARE_REL = `${APP_REL}/${MIDDLEWARE_DIR}`;
 
 const INIT_FILES: Array<{ rel: string; template: string }> = [
-  { rel: PACKAGE_JSON, template: "init/package.json.eta" },
-  { rel: TSCONFIG_JSON, template: "init/tsconfig.json.eta" },
-  { rel: GITIGNORE, template: "init/gitignore.eta" },
-  { rel: CONFIG_FILE, template: "init/aether.config.json.eta" },
-  { rel: ENV_EXAMPLE_FILE, template: "init/env.example.eta" },
-  { rel: DEFAULT_MAIN, template: "init/src-main.ts.eta" },
-  { rel: DEFAULT_COMPOSITION, template: "init/src-app-composition.ts.eta" },
-  { rel: DEFAULT_APP_ENTRY, template: "init/src-app.ts.eta" },
-  { rel: `${APP_REL}/config.ts`, template: "init/src-app-config.ts.eta" },
-  { rel: `${APP_REL}/server.ts`, template: "init/src-app-server.ts.eta" },
-  { rel: `${APP_REL}/router.ts`, template: "init/src-app-router.ts.eta" },
-  { rel: `${APP_REL}/http.ts`, template: "init/src-app-http.ts.eta" },
-  { rel: `${APP_REL}/logger.ts`, template: "init/src-app-logger.ts.eta" },
-  { rel: `${MIDDLEWARE_REL}/types.ts`, template: "init/src-app-middleware-types.ts.eta" },
+  { rel: PACKAGE_JSON, template: INIT_TEMPLATE.packageJson },
+  { rel: TSCONFIG_JSON, template: INIT_TEMPLATE.tsconfig },
+  { rel: GITIGNORE, template: INIT_TEMPLATE.gitignore },
+  { rel: CONFIG_FILE, template: INIT_TEMPLATE.aetherConfig },
+  { rel: ENV_EXAMPLE_FILE, template: INIT_TEMPLATE.envExample },
+  { rel: DEFAULT_MAIN, template: INIT_TEMPLATE.main },
+  { rel: DEFAULT_COMPOSITION, template: INIT_TEMPLATE.composition },
+  { rel: DEFAULT_APP_ENTRY, template: INIT_TEMPLATE.app },
+  { rel: `${APP_REL}/${APP_SCAFFOLD.config}`, template: INIT_TEMPLATE.appConfig },
+  { rel: `${APP_REL}/${APP_SCAFFOLD.server}`, template: INIT_TEMPLATE.appServer },
+  { rel: `${APP_REL}/${APP_SCAFFOLD.router}`, template: INIT_TEMPLATE.appRouter },
+  { rel: `${APP_REL}/${APP_SCAFFOLD.http}`, template: INIT_TEMPLATE.appHttp },
+  { rel: `${APP_REL}/${APP_SCAFFOLD.list}`, template: INIT_TEMPLATE.appList },
+  { rel: `${APP_REL}/${APP_SCAFFOLD.logger}`, template: INIT_TEMPLATE.appLogger },
+  { rel: `${MIDDLEWARE_REL}/${MIDDLEWARE_SCAFFOLD.types}`, template: INIT_TEMPLATE.middlewareTypes },
   {
-    rel: `${MIDDLEWARE_REL}/request-logger.ts`,
-    template: "init/src-app-middleware-request-logger.ts.eta",
+    rel: `${MIDDLEWARE_REL}/${MIDDLEWARE_SCAFFOLD.requestLogger}`,
+    template: INIT_TEMPLATE.middlewareRequestLogger,
   },
   {
-    rel: `${MIDDLEWARE_REL}/error-handler.ts`,
-    template: "init/src-app-middleware-error-handler.ts.eta",
+    rel: `${MIDDLEWARE_REL}/${MIDDLEWARE_SCAFFOLD.errorHandler}`,
+    template: INIT_TEMPLATE.middlewareErrorHandler,
   },
   {
-    rel: `${DEFAULT_SRC_DIR}/${HEALTH_DIR}/health.routes.ts`,
-    template: "init/src-health-health.routes.ts.eta",
+    rel: `${MIDDLEWARE_REL}/${MIDDLEWARE_SCAFFOLD.cors}`,
+    template: INIT_TEMPLATE.middlewareCors,
+  },
+  {
+    rel: `${MIDDLEWARE_REL}/${MIDDLEWARE_SCAFFOLD.bodyLimit}`,
+    template: INIT_TEMPLATE.middlewareBodyLimit,
+  },
+  {
+    rel: `${MIDDLEWARE_REL}/${MIDDLEWARE_SCAFFOLD.bearerAuth}`,
+    template: INIT_TEMPLATE.middlewareBearerAuth,
+  },
+  {
+    rel: `${DEFAULT_SRC_DIR}/${HEALTH_DIR}/${HEALTH_ROUTES_BASENAME}`,
+    template: INIT_TEMPLATE.healthRoutes,
   },
 ];
 
@@ -71,7 +90,7 @@ export const projectGenerator: Generator<InitOptions & { targetRoot: string }> =
       );
     }
 
-    const projectName = options.projectName ?? basename(root) ?? "app";
+    const projectName = options.projectName ?? basename(root) ?? DEFAULT_PROJECT_NAME;
     const data = {
       projectName,
       configVersion: CONFIG_VERSION,
@@ -82,11 +101,11 @@ export const projectGenerator: Generator<InitOptions & { targetRoot: string }> =
     const ops: FileOp[] = [];
     for (const f of INIT_FILES) {
       const contents = await renderTemplate(f.template, data);
-      ops.push({ kind: "create", path: f.rel, contents });
+      ops.push({ kind: FILE_OP.create, path: f.rel, contents });
     }
     if (!pathExists(root, ENV_FILE)) {
-      const envContents = await renderTemplate("init/env.eta", data);
-      ops.push({ kind: "create", path: ENV_FILE, contents: envContents });
+      const envContents = await renderTemplate(INIT_TEMPLATE.env, data);
+      ops.push({ kind: FILE_OP.create, path: ENV_FILE, contents: envContents });
     }
     return ops;
   },

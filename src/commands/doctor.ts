@@ -8,6 +8,7 @@ import {
   EXIT_FAIL,
   EXIT_OK,
   MIN_NODE_MAJOR,
+  TEMPLATE_INIT_DIR,
   TEMPLATES_DIRNAME,
 } from "../core/constants.js";
 
@@ -41,7 +42,7 @@ export function runDoctorChecks(cwd: string): DoctorCheck[] {
   }
 
   const cliRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
-  const templatesDist = join(cliRoot, DIST_DIR, TEMPLATES_DIRNAME, "init");
+  const templatesDist = join(cliRoot, DIST_DIR, TEMPLATES_DIRNAME, TEMPLATE_INIT_DIR);
   checks.push({
     id: "templates",
     ok: existsSync(templatesDist),

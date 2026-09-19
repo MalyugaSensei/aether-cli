@@ -1,0 +1,33 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { config } from "../config";
+import { HTTP_STATUS, sendError } from "../http";
+import type { Middleware } from "./types";
+
+const BODY_METHODS = new Set(["POST", "PUT", "PATCH"]);
+
+export const bodyLimit: Middleware = async (
+  req: IncomingMessage,
+  res: ServerResponse,
+  next,
+) => {
+  const method = (req.method ?? "GET").toUpperCase();
+  if (!BODY_METHODS.has(method)) {
+    await next();
+    return;
+  }
+
+  const raw = req.headers["content-length"];
+  if (raw !== undefined) {
+    const length = Number(raw);
+    if (!Number.isInteger(length) || length < 0) {
+      sendError(res, HTTP_STATUS.BAD_REQUEST, "Invalid Content-Length");
+      return;
+    }
+    if (length > config.bodyLimitBytes) {
+      sendError(res, HTTP_STATUS.PAYLOAD_TOO_LARGE, "Request body too large");
+      return;
+    }
+  }
+
+  await next();
+};

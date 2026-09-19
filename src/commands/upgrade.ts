@@ -2,13 +2,13 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { loadConfig } from "../core/project.js";
 import { compositionRel } from "../core/paths.js";
-import { DEFAULT_APP_ENTRY, EXIT_FAIL, EXIT_OK, PACKAGE_JSON } from "../core/constants.js";
+import { CLI_NAME, DEFAULT_APP_ENTRY, EXIT_FAIL, EXIT_OK, PACKAGE_JSON } from "../core/constants.js";
 
 export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?: boolean }): Promise<number> {
   const suggestions: string[] = [];
 
   if (!existsSync(join(cwd, PACKAGE_JSON))) {
-    suggestions.push("Run aether init to create a project.");
+    suggestions.push(`Run ${CLI_NAME} init to create a project.`);
   } else {
     try {
       loadConfig(cwd);
@@ -18,10 +18,10 @@ export async function runUpgrade(cwd: string, options: { dryRun?: boolean; json?
 
     const comp = compositionRel({ root: cwd, config: loadConfig(cwd), appEntryPath: "" });
     if (!existsSync(join(cwd, comp))) {
-      suggestions.push(`Add ${comp} (restore from latest aether init template).`);
+      suggestions.push(`Add ${comp} (restore from latest ${CLI_NAME} init template).`);
     }
     if (!existsSync(join(cwd, DEFAULT_APP_ENTRY))) {
-      suggestions.push(`Restore ${DEFAULT_APP_ENTRY} from latest aether init template.`);
+      suggestions.push(`Restore ${DEFAULT_APP_ENTRY} from latest ${CLI_NAME} init template.`);
     }
   }
 

@@ -23,14 +23,16 @@
 
     init          HTTP server, router, composition, config from env,
                   structured logging, request logger, error handler,
-                  health check
+                  health check, CORS, body limit, optional bearer auth,
+                  list query helper (limit/offset)
 
     resource      types → validate → repository → service →
                   controller → routes → module (wired in composition)
 
     middleware    passthrough stub; optional global registration
 
-    openapi       OpenAPI 3.0 JSON/YAML → CRUD resources (batch)
+    openapi       OpenAPI 3.0 JSON/YAML → CRUD resources (batch).
+                  Re-run syncs types + validate; --force rewrites the module
 
 
   COMMANDS
@@ -98,10 +100,13 @@
     Add tests after the fact
       aether g resource orders --tests
 
-    Auth middleware on every request
-      aether g middleware auth --global
+    Auth on every request except /health
+      Set BEARER_TOKEN in .env (no extra generate step)
 
-    From API spec
+    CORS for a browser origin
+      CORS_ORIGIN=http://localhost:5173
+
+    From API spec (re-run syncs fields, keeps your service)
       aether g openapi ./api.yaml --strict
 
     CI-friendly failure
@@ -113,7 +118,9 @@
 
     · CommonJS output, local imports without .ts extensions
     · CRUD repository is an interface — wire a real store in composition
+    · Collection GET: ?limit=1..100&offset=0 (defaults 50 / 0)
     · OpenAPI: 3.0.x, JSON bodies, in-spec $ref to #/components/schemas
+    · OpenAPI re-run updates types/validate only; --force regenerates the module
     · Per-route middleware: not generated; use route handlers or extend router
 
   More for CLI contributors: AGENTS.md and specs/ in the repository.

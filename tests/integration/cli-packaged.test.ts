@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtempSync } from "node:fs";
+import { existsSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,10 +34,15 @@ describe("packaged CLI", () => {
     expect(r.code, r.stderr || r.stdout).toBe(0);
   });
 
-  it("R-help-02: dist cli prints bundled guide", async () => {
+  it("R-help-01: dist cli help includes quick-start aether init", async () => {
     const r = await runBuilt(["help", "--no-color"], cliRoot);
     expect(r.code, r.stderr || r.stdout).toBe(0);
     expect(r.stdout).toMatch(/aether init/);
     expect(r.stdout).toMatch(/QUICK START/);
+  });
+
+  it("R-help-02: built CLI ships dist/help/guide.txt", () => {
+    const guidePath = join(cliRoot, "dist/help/guide.txt");
+    expect(existsSync(guidePath)).toBe(true);
   });
 });

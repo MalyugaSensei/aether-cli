@@ -1,7 +1,13 @@
 import type { FileOp } from "../core/plan.js";
 import { pathExists } from "../core/plan.js";
 import { ErrorCode, ChiselError } from "../core/errors.js";
-import { GENERATOR, RESOURCE_LAYER } from "../core/constants.js";
+import {
+  FILE_OP,
+  GENERATOR,
+  RESOURCE_LAYER,
+  RESOURCE_PLAN_MODE,
+  type ResourcePlanMode,
+} from "../core/constants.js";
 import type { ProjectContext } from "../core/project.js";
 import {
   importPathFromAppEntry,
@@ -9,6 +15,7 @@ import {
   resourceFileRel,
   compositionRel,
   importPathFromComposition,
+  resourceModuleFileBase,
 } from "../core/paths.js";
 import { addNamedImportIfMissing, appendModuleRoutesSpreadIfMissing } from "../core/ast.js";
 import type { Generator } from "./types.js";
@@ -32,10 +39,15 @@ export interface ResourceOptions {
 export async function planResourceFiles(
   project: ProjectContext,
   tpl: ReturnType<typeof buildResourceContext>,
+  mode: ResourcePlanMode = RESOURCE_PLAN_MODE.full,
 ): Promise<FileOp[]> {
-  const ops: FileOp[] = [await planResourceLayer(project, tpl, RESOURCE_LAYER.types)];
+  const overwrite = mode === RESOURCE_PLAN_MODE.schema;
+  const ops: FileOp[] = [await planResourceLayer(project, tpl, RESOURCE_LAYER.types, { overwrite })];
   if (tpl.crud) {
-    ops.push(await planResourceLayer(project, tpl, RESOURCE_LAYER.validate));
+    ops.push(await planResourceLayer(project, tpl, RESOURCE_LAYER.validate, { overwrite }));
+  }
+  if (mode === RESOURCE_PLAN_MODE.schema) {
+    return ops;
   }
   ops.push(
     await planResourceLayer(project, tpl, RESOURCE_LAYER.repository),
@@ -52,12 +64,12 @@ export function planCompositionRegistration(
   tpl: ReturnType<typeof buildResourceContext>,
 ): FileOp {
   const factory = moduleFactoryName(tpl.entityPascal);
-  const moduleImport = importPathFromComposition(ctx, tpl.resourceKebab, `${tpl.resourceKebab}.module`);
+  const moduleImport = importPathFromComposition(ctx, tpl.resourceKebab, resourceModuleFileBase(tpl.resourceKebab));
   const compRel = compositionRel(ctx);
   const callArgs = tpl.crud ? "{}" : "";
 
   return {
-    kind: "modify",
+    kind: FILE_OP.modify,
     path: compRel,
     edit(sf) {
       addNamedImportIfMissing(sf, moduleImport, [factory]);

@@ -16,7 +16,15 @@ describe("http helpers (generated app semantics)", () => {
     await expect(readJson(req)).rejects.toBeInstanceOf(JsonBodyError);
   });
 
-  it("R-crud-02: invalid JSON throws JsonBodyError", async () => {
+  it("R-init-12: readJson rejects bodies over maxBytes", async () => {
+    const req = reqWithBody("{\"a\":1}");
+    await expect(readJson(req, 3)).rejects.toMatchObject({
+      name: "JsonBodyError",
+      status: 413,
+    });
+  });
+
+  it("R-router-03: invalid JSON throws JsonBodyError", async () => {
     const req = reqWithBody("{");
     await expect(readJson(req)).rejects.toBeInstanceOf(JsonBodyError);
   });

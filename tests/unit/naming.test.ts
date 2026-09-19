@@ -7,7 +7,7 @@ import {
 } from "../../src/core/naming.js";
 
 describe("naming", () => {
-  it("R-resource-01 helper: validates kebab-case names", () => {
+  it("validateResourceName accepts kebab-case and rejects invalid names", () => {
     expect(() => validateResourceName("users")).not.toThrow();
     expect(() => validateResourceName("User")).toThrow();
     expect(() => validateResourceName("1bad")).toThrow();

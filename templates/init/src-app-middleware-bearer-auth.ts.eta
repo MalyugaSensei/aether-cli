@@ -1,0 +1,57 @@
+import { timingSafeEqual } from "node:crypto";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { config } from "../config";
+import { HTTP_STATUS, sendError } from "../http";
+import type { Middleware } from "./types";
+
+function tokensEqual(left: string, right: string): boolean {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  if (a.length !== b.length) {
+    return false;
+  }
+  return timingSafeEqual(a, b);
+}
+
+function readBearer(header: string | string[] | undefined): string | undefined {
+  const value = Array.isArray(header) ? header[0] : header;
+  if (!value) {
+    return undefined;
+  }
+  const match = /^Bearer\s+(\S+)/i.exec(value);
+  return match?.[1];
+}
+
+function requestPath(req: IncomingMessage): string {
+  const url = new URL(req.url ?? "/", "http://localhost");
+  const pathname = url.pathname;
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1);
+  }
+  return pathname || "/";
+}
+
+export const bearerAuth: Middleware = async (
+  req: IncomingMessage,
+  res: ServerResponse,
+  next,
+) => {
+  if (config.bearerToken.length === 0) {
+    await next();
+    return;
+  }
+
+  const method = (req.method ?? "GET").toUpperCase();
+  if (method === "OPTIONS" || (method === "GET" && requestPath(req) === "/health")) {
+    await next();
+    return;
+  }
+
+  const token = readBearer(req.headers.authorization);
+  if (!token || !tokensEqual(token, config.bearerToken)) {
+    sendError(res, HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+    return;
+  }
+
+  await next();
+};

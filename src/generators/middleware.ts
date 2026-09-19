@@ -11,7 +11,7 @@ import {
   middlewareFileName,
   validateResourceName,
 } from "../core/naming.js";
-import { AST_SYMBOL, GENERATOR, TEMPLATE } from "../core/constants.js";
+import { AST_SYMBOL, FILE_OP, GENERATOR, TEMPLATE } from "../core/constants.js";
 import { renderTemplate } from "../core/render.js";
 import type { ProjectContext } from "../core/project.js";
 import type { Generator } from "./types.js";
@@ -42,11 +42,11 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
     const appRel = relative(ctx.root, ctx.appEntryPath).split("\\").join("/");
     const importPath = importPathFromAppEntry(ctx, middlewareFileRel(ctx, kebab).replace(/\.ts$/, ""));
 
-    const ops: FileOp[] = [{ kind: "create", path: relPath, contents }];
+    const ops: FileOp[] = [{ kind: FILE_OP.create, path: relPath, contents }];
 
     if (options.global) {
       ops.push({
-        kind: "modify",
+        kind: FILE_OP.modify,
         path: appRel,
         edit(sf) {
           addNamedImportIfMissing(sf, importPath, [exportName]);

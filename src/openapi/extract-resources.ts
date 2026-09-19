@@ -1,4 +1,12 @@
-import { JSON_MIME, OPENAPI_SCHEMA_REF_PREFIX } from "../core/constants.js";
+import {
+  ENTITY_ID_FIELD,
+  JSON_MIME,
+  OPENAPI_HTTP_METHOD,
+  OPENAPI_SCHEMA_REF_PREFIX,
+  OPENAPI_SCHEMA_TYPE,
+  TS_SCALAR_TYPE,
+  type OpenApiHttpMethod,
+} from "../core/constants.js";
 import type { ResourceField } from "../generators/resource-context.js";
 import type {
   ExtractOptions,
@@ -12,11 +20,13 @@ import type {
 
 function mapOpenApiType(schema: JsonSchema): ResourceField["tsType"] | undefined {
   if (schema.enum && schema.enum.length > 0) {
-    return "string";
+    return TS_SCALAR_TYPE.string;
   }
-  if (schema.type === "string") return "string";
-  if (schema.type === "boolean") return "boolean";
-  if (schema.type === "number" || schema.type === "integer") return "number";
+  if (schema.type === OPENAPI_SCHEMA_TYPE.string) return TS_SCALAR_TYPE.string;
+  if (schema.type === OPENAPI_SCHEMA_TYPE.boolean) return TS_SCALAR_TYPE.boolean;
+  if (schema.type === OPENAPI_SCHEMA_TYPE.number || schema.type === OPENAPI_SCHEMA_TYPE.integer) {
+    return TS_SCALAR_TYPE.number;
+  }
   return undefined;
 }
 
@@ -35,7 +45,7 @@ function resolveSchema(doc: OpenApiDocument, schema: JsonSchema | undefined): Js
 function fieldsFromRequestSchema(
   doc: OpenApiDocument,
   item: PathItem,
-  method: "post" | "patch" | "put",
+  method: OpenApiHttpMethod,
 ): ResourceField[] | undefined {
   const op = item[method];
   const schema = resolveSchema(doc, op?.requestBody?.content?.[JSON_MIME]?.schema);
@@ -45,7 +55,7 @@ function fieldsFromRequestSchema(
   const fields: ResourceField[] = [];
 
   for (const [name, propSchema] of Object.entries(schema.properties)) {
-    if (name === "id") continue;
+    if (name === ENTITY_ID_FIELD) continue;
     const resolved = resolveSchema(doc, propSchema) ?? propSchema;
     const tsType = mapOpenApiType(resolved);
     if (!tsType) continue;
@@ -120,7 +130,7 @@ export function extractResources(doc: OpenApiDocument, options: ExtractOptions =
       continue;
     }
 
-    const postFields = fieldsFromRequestSchema(doc, collectionItem, "post");
+    const postFields = fieldsFromRequestSchema(doc, collectionItem, OPENAPI_HTTP_METHOD.post);
     if (!postFields) {
       skipped.push({ path: rawPath, reason: "missing POST JSON request body schema" });
       continue;
@@ -128,8 +138,8 @@ export function extractResources(doc: OpenApiDocument, options: ExtractOptions =
 
     const itemPath = paths[itemRaw]!;
     const patchFields =
-      fieldsFromRequestSchema(doc, itemPath, "patch") ??
-      fieldsFromRequestSchema(doc, itemPath, "put") ??
+      fieldsFromRequestSchema(doc, itemPath, OPENAPI_HTTP_METHOD.patch) ??
+      fieldsFromRequestSchema(doc, itemPath, OPENAPI_HTTP_METHOD.put) ??
       [];
     const fields = mergeFieldSets(postFields, patchFields);
 

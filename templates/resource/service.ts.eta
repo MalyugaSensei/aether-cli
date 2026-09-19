@@ -5,11 +5,12 @@ import type {
   Create<%= it.entityPascal %>Input,
   Update<%= it.entityPascal %>Input,
 } from "./<%= it.resourceKebab %>.types";
+import type { ListQuery } from "../app/list";
 
 export function create<%= it.entityPascal %>Service(repository: <%= it.entityPascal %>Repository) {
   return {
-    list(): <%= it.entityPascal %>[] {
-      return repository.findAll();
+    list(query: ListQuery): <%= it.entityPascal %>[] {
+      return repository.findAll(query);
     },
 
     getById(id: string): <%= it.entityPascal %> | undefined {

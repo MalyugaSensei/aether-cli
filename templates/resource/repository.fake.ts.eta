@@ -1,13 +1,14 @@
 import type { <%= it.entityPascal %>, Create<%= it.entityPascal %>Input } from "../src/<%= it.resourceKebab %>/<%= it.resourceKebab %>.types";
 import type { <%= it.entityPascal %>Repository } from "../src/<%= it.resourceKebab %>/<%= it.resourceKebab %>.repository";
+import type { ListQuery } from "../src/app/list";
 
 export function createFake<%= it.entityPascal %>Repository(): <%= it.entityPascal %>Repository {
   const store = new Map<string, <%= it.entityPascal %>>();
   let seq = 1;
 
   return {
-    findAll() {
-      return [...store.values()];
+    findAll(query: ListQuery) {
+      return [...store.values()].slice(query.offset, query.offset + query.limit);
     },
     findById(id: string) {
       return store.get(id);

@@ -1,0 +1,35 @@
+export type ListQuery = {
+  limit: number;
+  offset: number;
+};
+
+export const LIST_DEFAULT_LIMIT = 50;
+export const LIST_MAX_LIMIT = 100;
+
+export type ListQueryResult =
+  | { ok: true; value: ListQuery }
+  | { ok: false; message: string };
+
+const INVALID_LIST_QUERY = "Invalid list query";
+
+function parseCount(raw: string | null, fallback: number): number | null {
+  if (raw === null || raw.length === 0) {
+    return fallback;
+  }
+  if (!/^\d+$/.test(raw)) {
+    return null;
+  }
+  return Number(raw);
+}
+
+export function parseListQuery(search: URLSearchParams): ListQueryResult {
+  const limit = parseCount(search.get("limit"), LIST_DEFAULT_LIMIT);
+  const offset = parseCount(search.get("offset"), 0);
+  if (limit === null || offset === null) {
+    return { ok: false, message: INVALID_LIST_QUERY };
+  }
+  if (limit < 1 || limit > LIST_MAX_LIMIT) {
+    return { ok: false, message: INVALID_LIST_QUERY };
+  }
+  return { ok: true, value: { limit, offset } };
+}

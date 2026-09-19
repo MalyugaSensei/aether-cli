@@ -1,9 +1,15 @@
 import type { IncomingMessage } from "node:http";
 
-export async function readJson<T = unknown>(req: IncomingMessage): Promise<T> {
+export async function readJson<T = unknown>(req: IncomingMessage, maxBytes = 1048576): Promise<T> {
   const chunks: Buffer[] = [];
+  let size = 0;
   for await (const chunk of req) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    const buf = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+    size += buf.length;
+    if (size > maxBytes) {
+      throw new JsonBodyError("Request body too large", 413);
+    }
+    chunks.push(buf);
   }
   const raw = Buffer.concat(chunks).toString("utf8").trim();
   if (!raw) {
@@ -17,8 +23,11 @@ export async function readJson<T = unknown>(req: IncomingMessage): Promise<T> {
 }
 
 export class JsonBodyError extends Error {
-  constructor(message: string) {
+  readonly status: number;
+
+  constructor(message: string, status = 400) {
     super(message);
     this.name = "JsonBodyError";
+    this.status = status;
   }
 }

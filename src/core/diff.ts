@@ -1,5 +1,7 @@
+import { FILE_OP, type FileOpKind } from "./constants.js";
+
 export interface PlanOpJson {
-  kind: "create" | "modify";
+  kind: FileOpKind;
   path: string;
 }
 
@@ -7,7 +9,7 @@ export interface PlanJson {
   ops: PlanOpJson[];
 }
 
-export function planToJson(ops: { kind: "create" | "modify"; path: string }[]): PlanJson {
+export function planToJson(ops: { kind: FileOpKind; path: string }[]): PlanJson {
   return {
     ops: ops.map((op) => ({ kind: op.kind, path: op.path })),
   };
@@ -36,7 +38,7 @@ export function formatMaterializedDiff(
 ): string {
   const chunks: string[] = [];
   for (const op of materialized) {
-    if (op.kind === "create") {
+    if (op.kind === FILE_OP.create) {
       chunks.push(formatUnifiedDiff(op.path, "", op.contents));
     } else if (op.previousContents !== undefined && op.previousContents !== op.contents) {
       chunks.push(formatUnifiedDiff(op.path, op.previousContents, op.contents));

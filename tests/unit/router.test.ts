@@ -67,7 +67,7 @@ describe("router", () => {
     expect(hit).toBe(true);
   });
 
-  it("static segment wins when registered before param route", async () => {
+  it("static segment wins over param route at the same level (registration order)", async () => {
     const handler = createRouter([
       {
         method: "GET",

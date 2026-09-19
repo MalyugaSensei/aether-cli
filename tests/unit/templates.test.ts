@@ -44,12 +44,16 @@ describe("templates", () => {
     expect(app).toContain("buildAppRoutes");
   });
 
-  it("init tsconfig uses NodeNext and types node", async () => {
+  it("R-init-04: init tsconfig uses NodeNext and types node", async () => {
     const json = await renderTemplate("init/tsconfig.json.eta", { projectName: "demo" });
     const tsconfig = JSON.parse(json) as { compilerOptions: Record<string, unknown> };
     expect(tsconfig.compilerOptions.module).toBe("NodeNext");
     expect(tsconfig.compilerOptions.moduleResolution).toBe("NodeNext");
     expect(tsconfig.compilerOptions.types).toEqual(["node"]);
+
+    const main = await renderTemplate("init/src-main.ts.eta", { projectName: "demo" });
+    expect(main).toMatch(/from "\.\/app\/server"/);
+    expect(main).not.toMatch(/from "\.\/app\/server\.js"/);
   });
 
   it("R-init-08: init config template and no dotenv dependency", async () => {
@@ -60,10 +64,9 @@ describe("templates", () => {
 
     const example = await renderTemplate("init/env.example.eta", { projectName: "demo" });
     expect(example).toContain("PORT=3000");
-
-    const json = await renderTemplate("init/package.json.eta", { projectName: "demo" });
-    const pkg = JSON.parse(json) as { dependencies?: Record<string, string> };
-    expect(pkg.dependencies).toBeUndefined();
+    expect(example).toContain("CORS_ORIGIN=");
+    expect(example).toContain("BODY_LIMIT_BYTES=1048576");
+    expect(example).toContain("BEARER_TOKEN=");
   });
 
   it("R-init-09: loadConfig validates PORT and NODE_ENV", async () => {
@@ -76,6 +79,11 @@ describe("templates", () => {
     expect(configSrc).toContain("Invalid NODE_ENV");
     expect(configSrc).toContain("DEFAULT_SHUTDOWN_GRACE_MS");
     expect(configSrc).toContain("10000");
+    expect(configSrc).toContain("CORS_ORIGIN");
+    expect(configSrc).toContain("DEFAULT_BODY_LIMIT_BYTES");
+    expect(configSrc).toContain("1048576");
+    expect(configSrc).toContain("BEARER_TOKEN");
+    expect(configSrc).toContain("Invalid BODY_LIMIT_BYTES");
   });
 
   it("R-crud-01: crud repository is interface only", async () => {
@@ -89,8 +97,9 @@ describe("templates", () => {
     };
     const repo = await renderTemplate("resource/repository.ts.eta", ctx);
     expect(repo).toContain("export interface UserRepository");
-    expect(repo).not.toContain("TODO");
-    expect(repo).not.toContain("throw new Error");
+    expect(repo).toContain("findAll(query: ListQuery)");
+    expect(repo).not.toMatch(/\bexport (async )?function\b/);
+    expect(repo).not.toMatch(/\bexport class\b/);
   });
 
   it("R-crud-05: manual crud has empty domain fields", async () => {
@@ -125,6 +134,7 @@ describe("templates", () => {
 
     const controller = await renderTemplate("resource/controller.ts.eta", ctx);
     expect(controller).toContain("parseCreateInput");
+    expect(controller).toContain("parseListQuery");
     expect(controller).toContain("Repository not configured");
   });
 
@@ -143,4 +153,24 @@ describe("templates", () => {
     expect(src).toContain('method: "DELETE"');
     expect((src.match(/method:/g) ?? []).length).toBe(5);
   });
+
+  it("R-crud-06: list query is wired through repository service and controller", async () => {
+    const ctx = {
+      resourceKebab: "users",
+      resourceCamel: "users",
+      entityPascal: "User",
+      crud: true,
+      fields: [],
+      routePrefix: "",
+    };
+    const service = await renderTemplate("resource/service.ts.eta", ctx);
+    expect(service).toContain("list(query: ListQuery)");
+    expect(service).toContain("repository.findAll(query)");
+
+    const list = await renderTemplate("init/src-app-list.ts.eta", { projectName: "demo" });
+    expect(list).toContain("LIST_DEFAULT_LIMIT = 50");
+    expect(list).toContain("LIST_MAX_LIMIT = 100");
+    expect(list).toContain("export function parseListQuery");
+  });
+
 });

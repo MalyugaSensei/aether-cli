@@ -1,0 +1,45 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { config } from "../config";
+import type { Middleware } from "./types";
+
+const ALLOW_METHODS = "GET, POST, PATCH, PUT, DELETE, OPTIONS";
+const ALLOW_HEADERS = "Content-Type, Authorization";
+
+function allowedOrigin(requestOrigin: string | undefined): string | undefined {
+  const configured = config.corsOrigin;
+  if (configured.length === 0) {
+    return undefined;
+  }
+  if (configured === "*") {
+    return "*";
+  }
+  if (!requestOrigin) {
+    return undefined;
+  }
+  const allowed = configured.split(",").map((part) => part.trim()).filter(Boolean);
+  return allowed.includes(requestOrigin) ? requestOrigin : undefined;
+}
+
+export const cors: Middleware = async (req: IncomingMessage, res: ServerResponse, next) => {
+  const allow = allowedOrigin(req.headers.origin);
+  if (allow) {
+    res.setHeader("Access-Control-Allow-Origin", allow);
+    res.setHeader("Access-Control-Allow-Methods", ALLOW_METHODS);
+    res.setHeader("Access-Control-Allow-Headers", ALLOW_HEADERS);
+    if (allow !== "*") {
+      res.setHeader("Vary", "Origin");
+    }
+  }
+
+  if ((req.method ?? "GET").toUpperCase() === "OPTIONS") {
+    if (config.corsOrigin.length === 0) {
+      await next();
+      return;
+    }
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
+
+  await next();
+};
