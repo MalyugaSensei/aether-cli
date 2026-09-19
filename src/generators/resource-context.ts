@@ -1,3 +1,4 @@
+import type { TsScalarType } from "../core/constants.js";
 import {
   resolveSingularPascal,
   toCamel,
@@ -7,7 +8,7 @@ import {
 
 export interface ResourceField {
   name: string;
-  tsType: "string" | "number" | "boolean";
+  tsType: TsScalarType;
   required: boolean;
 }
 

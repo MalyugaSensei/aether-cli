@@ -6,6 +6,9 @@ export type AppConfig = {
   host: string;
   nodeEnv: "development" | "production" | "test";
   shutdownGraceMs: number;
+  corsOrigin: string;
+  bodyLimitBytes: number;
+  bearerToken: string;
 };
 
 const ALLOWED_NODE_ENV = new Set(["development", "production", "test"]);
@@ -13,6 +16,7 @@ const DEFAULT_PORT = 3000;
 const DEFAULT_HOST = "0.0.0.0";
 const DEFAULT_NODE_ENV = "development";
 const DEFAULT_SHUTDOWN_GRACE_MS = 10000;
+const DEFAULT_BODY_LIMIT_BYTES = 1048576;
 const PORT_MIN = 1;
 const PORT_MAX = 65535;
 
@@ -78,11 +82,23 @@ export function loadConfig(): AppConfig {
     throw new Error(`Invalid SHUTDOWN_GRACE_MS: ${graceRaw}`);
   }
 
+  const corsOrigin = (process.env.CORS_ORIGIN ?? "").trim();
+  const bearerToken = process.env.BEARER_TOKEN ?? "";
+
+  const bodyLimitRaw = process.env.BODY_LIMIT_BYTES ?? String(DEFAULT_BODY_LIMIT_BYTES);
+  const bodyLimitBytes = Number(bodyLimitRaw);
+  if (!Number.isInteger(bodyLimitBytes) || bodyLimitBytes < 1) {
+    throw new Error(`Invalid BODY_LIMIT_BYTES: ${bodyLimitRaw}`);
+  }
+
   return {
     port,
     host,
     nodeEnv: nodeEnv as AppConfig["nodeEnv"],
     shutdownGraceMs,
+    corsOrigin,
+    bodyLimitBytes,
+    bearerToken,
   };
 }
 

@@ -4,8 +4,11 @@ import type { Middleware } from "./app/middleware/types";
 import { buildAppRoutes } from "./app/composition";
 import { handleRequestError } from "./app/middleware/error-handler";
 import { requestLogger } from "./app/middleware/request-logger";
+import { cors } from "./app/middleware/cors";
+import { bodyLimit } from "./app/middleware/body-limit";
+import { bearerAuth } from "./app/middleware/bearer-auth";
 
-const middleware: Middleware[] = [requestLogger];
+const middleware: Middleware[] = [cors, bodyLimit, requestLogger, bearerAuth];
 const routes: Route[] = buildAppRoutes();
 
 export function createApp(): (

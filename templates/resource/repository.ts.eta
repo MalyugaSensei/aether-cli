@@ -1,8 +1,11 @@
 import type { <%= it.entityPascal %> } from "./<%= it.resourceKebab %>.types";
+<% if (it.crud) { %>
+import type { ListQuery } from "../app/list";
+<% } %>
 
 export interface <%= it.entityPascal %>Repository {
 <% if (it.crud) { %>
-  findAll(): <%= it.entityPascal %>[];
+  findAll(query: ListQuery): <%= it.entityPascal %>[];
   findById(id: string): <%= it.entityPascal %> | undefined;
   create(input: Omit<<%= it.entityPascal %>, "id">): <%= it.entityPascal %>;
   update(id: string, input: Partial<Omit<<%= it.entityPascal %>, "id">>): <%= it.entityPascal %> | undefined;

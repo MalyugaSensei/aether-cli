@@ -1,9 +1,9 @@
 import { resolve } from "node:path";
 import type { FileOp } from "../core/plan.js";
 import { pathExists } from "../core/plan.js";
-import { resourceDirRel } from "../core/paths.js";
+import { resourceDirRel, resourceFileRel } from "../core/paths.js";
 import { ChiselError, ErrorCode } from "../core/errors.js";
-import { GENERATOR } from "../core/constants.js";
+import { GENERATOR, RESOURCE_LAYER, RESOURCE_PLAN_MODE } from "../core/constants.js";
 import { extractResources } from "../openapi/extract-resources.js";
 import { loadOpenApiSpec } from "../openapi/load-spec.js";
 import type { Generator } from "./types.js";
@@ -42,11 +42,15 @@ export const openapiGenerator: Generator<OpenApiOptions> = {
 
     for (const resource of resources) {
       const dirRel = resourceDirRel(ctx, resource.name);
-      if (pathExists(ctx.root, dirRel) && !options.force) {
-        throw new ChiselError(
-          ErrorCode.ALREADY_EXISTS,
-          `Resource directory already exists: ${dirRel}. Use --force to overwrite.`,
-        );
+      const exists = pathExists(ctx.root, dirRel);
+      if (exists && !options.force) {
+        const validateRel = resourceFileRel(ctx, resource.name, RESOURCE_LAYER.validate);
+        if (!pathExists(ctx.root, validateRel)) {
+          throw new ChiselError(
+            ErrorCode.VALIDATION,
+            `Resource directory already exists and is not CRUD: ${dirRel}. Use --force to replace.`,
+          );
+        }
       }
 
       const tpl = buildResourceContext(
@@ -56,7 +60,9 @@ export const openapiGenerator: Generator<OpenApiOptions> = {
         resource.fields,
         resource.routePrefix,
       );
-      ops.push(...(await planResourceFiles(ctx, tpl)));
+      const mode =
+        exists && !options.force ? RESOURCE_PLAN_MODE.schema : RESOURCE_PLAN_MODE.full;
+      ops.push(...(await planResourceFiles(ctx, tpl, mode)));
     }
 
     for (const resource of resources) {

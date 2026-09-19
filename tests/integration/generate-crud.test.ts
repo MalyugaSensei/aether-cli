@@ -1,10 +1,10 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runChisel } from "../helpers/run-cli.js";
 import { tscCheck } from "../helpers/tsc-check.js";
 
@@ -35,16 +35,29 @@ function waitForProcessExit(
   }).then(([code]) => (code as number | null) ?? 1);
 }
 
+function wireUsersFakeRepository(dir: string): void {
+  const compPath = join(dir, "src/app/composition.ts");
+  let src = readFileSync(compPath, "utf8");
+  src = src.replace(
+    'import { createUserModule } from "../users/users.module";',
+    `import { createUserModule } from "../users/users.module";\nimport { createFakeUserRepository } from "../../tests/users.repository.fake";`,
+  );
+  src = src.replace(
+    "createUserModule({}).routes",
+    "createUserModule({ repository: createFakeUserRepository() }).routes",
+  );
+  writeFileSync(compPath, src);
+}
+
 describe("integration: init + crud resource", () => {
   const dir = mkdtempSync(join(tmpdir(), "chisel-int-"));
 
-  afterAll(() => {
-    rmSync(dir, { recursive: true, force: true });
+  beforeAll(async () => {
+    expect((await runChisel(["init"], dir)).code).toBe(0);
   });
 
-  it("R-init-01: init scaffolds project", async () => {
-    const r = await runChisel(["init"], dir);
-    expect(r.code).toBe(0);
+  afterAll(() => {
+    rmSync(dir, { recursive: true, force: true });
   });
 
   it("R-crud-01: generates users resource with crud", async () => {
@@ -81,6 +94,18 @@ describe("integration: init + crud resource", () => {
       expect(res.status).toBe(501);
       const body = (await res.json()) as { error?: string };
       expect(body.error).toBe("Repository not configured");
+
+      const badLimit = await fetch(`http://127.0.0.1:${port}/users?limit=abc`);
+      expect(badLimit.status).toBe(400);
+      const tooBig = await fetch(`http://127.0.0.1:${port}/users?limit=101`);
+      expect(tooBig.status).toBe(400);
+
+      const postWithoutRepo = await fetch(`http://127.0.0.1:${port}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      expect(postWithoutRepo.status).toBe(501);
     } finally {
       const exitPromise = waitForProcessExit(child);
       child.kill("SIGTERM");
@@ -88,7 +113,13 @@ describe("integration: init + crud resource", () => {
     }
   });
 
-  it("R-crud-02: controller rejects unknown create fields when schema is empty", async () => {
+  it("R-crud-06: repository findAll takes ListQuery", async () => {
+    const repo = readFileSync(join(dir, "src/users/users.repository.ts"), "utf8");
+    expect(repo).toContain("findAll(query: ListQuery)");
+  });
+
+  it("R-crud-02: wired repository returns 400 for unknown create fields and 404 for missing id", async () => {
+    wireUsersFakeRepository(dir);
     const port = 40_000 + Math.floor(Math.random() * 10_000);
     const child = spawn(process.execPath, [tsxCli, "src/main.ts"], {
       cwd: dir,
@@ -104,7 +135,10 @@ describe("integration: init + crud resource", () => {
         headers: { "Content-Type": "application/json" },
         body: '{"unexpected":true}',
       });
-      expect(bad.status).toBe(501);
+      expect(bad.status).toBe(400);
+
+      const missing = await fetch(`http://127.0.0.1:${port}/users/does-not-exist`);
+      expect(missing.status).toBe(404);
     } finally {
       const exitPromise = waitForProcessExit(child);
       child.kill("SIGTERM");

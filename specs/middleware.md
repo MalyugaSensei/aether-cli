@@ -31,4 +31,5 @@
 
 ## Out of scope
 
-- Per-route middleware, auth logic.
+- Per-route middleware.
+- Replacing init CORS / body-limit / bearer middleware; `g middleware` still emits a passthrough stub.

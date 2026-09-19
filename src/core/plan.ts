@@ -13,13 +13,14 @@ import { Project } from "ts-morph";
 import { ChiselError, ErrorCode } from "./errors.js";
 import { formatMaterializedDiff, planToJson } from "./diff.js";
 import { formatContents } from "./render.js";
+import { AETHER_TMP_SUFFIX, FILE_OP, type FileOpKind } from "./constants.js";
 
 export type FileOp =
-  | { kind: "create"; path: string; contents: string }
-  | { kind: "modify"; path: string; edit: (sf: SourceFile) => void };
+  | { kind: typeof FILE_OP.create; path: string; contents: string; overwrite?: boolean }
+  | { kind: typeof FILE_OP.modify; path: string; edit: (sf: SourceFile) => void };
 
 export interface MaterializedOp {
-  kind: "create" | "modify";
+  kind: FileOpKind;
   path: string;
   contents: string;
   previousContents?: string;
@@ -35,8 +36,8 @@ export interface CommitOptions {
 
 export function printPlan(ops: FileOp[]): void {
   for (const op of ops) {
-    if (op.kind === "create") {
-      console.log(`create ${op.path}`);
+    if (op.kind === FILE_OP.create) {
+      console.log(`${op.overwrite ? "update" : "create"} ${op.path}`);
     } else {
       console.log(`modify ${op.path}`);
     }
@@ -48,12 +49,16 @@ export async function materializePlan(
   ops: FileOp[],
   options: Pick<CommitOptions, "force"> = {},
 ): Promise<MaterializedOp[]> {
-  const createOps = ops.filter((o): o is Extract<FileOp, { kind: "create" }> => o.kind === "create");
-  const modifyOps = ops.filter((o): o is Extract<FileOp, { kind: "modify" }> => o.kind === "modify");
+  const createOps = ops.filter(
+    (o): o is Extract<FileOp, { kind: typeof FILE_OP.create }> => o.kind === FILE_OP.create,
+  );
+  const modifyOps = ops.filter(
+    (o): o is Extract<FileOp, { kind: typeof FILE_OP.modify }> => o.kind === FILE_OP.modify,
+  );
 
   for (const op of createOps) {
     const abs = join(root, op.path);
-    if (existsSync(abs) && !options.force) {
+    if (existsSync(abs) && !options.force && !op.overwrite) {
       throw new ChiselError(ErrorCode.ALREADY_EXISTS, `File already exists: ${op.path}. Use --force to overwrite.`);
     }
   }
@@ -65,7 +70,7 @@ export async function materializePlan(
     const formatted = await formatContents(op.contents, op.path);
     const abs = join(root, op.path);
     materialized.push({
-      kind: "create",
+      kind: FILE_OP.create,
       path: op.path,
       contents: formatted,
       previousContents: existsSync(abs) ? readFileSync(abs, "utf8") : undefined,
@@ -82,7 +87,7 @@ export async function materializePlan(
     op.edit(sf);
     const next = await formatContents(sf.getFullText(), op.path);
     materialized.push({
-      kind: "modify",
+      kind: FILE_OP.modify,
       path: op.path,
       contents: next,
       previousContents,
@@ -104,7 +109,7 @@ export async function applyMaterializedPlan(root: string, materialized: Material
         existed: existsSync(abs),
       });
       mkdirSync(dirname(abs), { recursive: true });
-      const tmp = `${abs}.aether.tmp`;
+      const tmp = `${abs}${AETHER_TMP_SUFFIX}`;
       writeFileSync(tmp, op.contents, "utf8");
       renameSync(tmp, abs);
     }
@@ -127,7 +132,7 @@ export async function commitPlan(
 ): Promise<{ materialized: MaterializedOp[]; changed: boolean }> {
   const materialized = await materializePlan(root, ops, { force: options.force });
   const changed = materialized.some(
-    (op) => op.kind === "create" || op.previousContents !== op.contents,
+    (op) => op.kind === FILE_OP.create || op.previousContents !== op.contents,
   );
 
   if (options.checkOnly) {

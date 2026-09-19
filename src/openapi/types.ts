@@ -1,3 +1,4 @@
+import { JSON_MIME } from "../core/constants.js";
 import type { ResourceField } from "../generators/resource-context.js";
 
 export interface OpenApiDocument {
@@ -19,7 +20,7 @@ export interface PathItem {
 export interface Operation {
   requestBody?: {
     content?: {
-      "application/json"?: {
+      [JSON_MIME]?: {
         schema?: JsonSchema;
       };
     };

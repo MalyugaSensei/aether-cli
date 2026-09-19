@@ -3,6 +3,7 @@ import {
   APP_DIR,
   COMPOSITION_BASENAME,
   MIDDLEWARE_DIR,
+  RESOURCE_LAYER,
 } from "./constants.js";
 import type { ProjectContext } from "./project.js";
 
@@ -12,6 +13,10 @@ export function resourceDirRel(ctx: ProjectContext, resourceKebab: string): stri
 
 export function resourceFileRel(ctx: ProjectContext, resourceKebab: string, suffix: string): string {
   return join(resourceDirRel(ctx, resourceKebab), `${resourceKebab}.${suffix}.ts`);
+}
+
+export function resourceModuleFileBase(resourceKebab: string): string {
+  return `${resourceKebab}.${RESOURCE_LAYER.module}`;
 }
 
 export function middlewareFileRel(ctx: ProjectContext, kebab: string): string {

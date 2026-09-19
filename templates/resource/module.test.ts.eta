@@ -4,8 +4,13 @@ import { create<%= it.entityPascal %>Module } from "../src/<%= it.resourceKebab 
 import { createFake<%= it.entityPascal %>Repository } from "./<%= it.resourceKebab %>.repository.fake";
 
 describe("<%= it.resourceKebab %> module", () => {
-  it("lists created items when repository is wired", () => {
-    const mod = create<%= it.entityPascal %>Module({ repository: createFake<%= it.entityPascal %>Repository() });
+  it("lists a page when repository is wired", () => {
+    const repository = createFake<%= it.entityPascal %>Repository();
+    repository.create({} as never);
+    repository.create({} as never);
+    assert.equal(repository.findAll({ limit: 1, offset: 0 }).length, 1);
+    assert.equal(repository.findAll({ limit: 1, offset: 1 }).length, 1);
+    const mod = create<%= it.entityPascal %>Module({ repository });
     assert.equal(mod.routes.length, 5);
   });
 });

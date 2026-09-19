@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Eta } from "eta";
 import prettier from "prettier";
-import { DIST_DIR, TEMPLATES_DIRNAME } from "./constants.js";
+import { DIST_DIR, INIT_TEMPLATE, TEMPLATES_DIRNAME } from "./constants.js";
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -13,7 +13,7 @@ export function templatesDir(): string {
   const built = join(packageRoot, DIST_DIR, TEMPLATES_DIRNAME);
   const dev = join(packageRoot, TEMPLATES_DIRNAME);
   try {
-    readFileSync(join(built, "init", "package.json.eta"));
+    readFileSync(join(built, INIT_TEMPLATE.packageJson));
     return built;
   } catch {
     return dev;

@@ -1,21 +1,33 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { config } from "./config";
 
 export const HTTP_STATUS = {
   OK: 200,
   CREATED: 201,
   NO_CONTENT: 204,
   BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
   NOT_FOUND: 404,
+  PAYLOAD_TOO_LARGE: 413,
   INTERNAL_SERVER_ERROR: 500,
   NOT_IMPLEMENTED: 501,
 } as const;
 
 const JSON_CONTENT_TYPE = "application/json";
 
-export async function readJson<T = unknown>(req: IncomingMessage): Promise<T> {
+export async function readJson<T = unknown>(
+  req: IncomingMessage,
+  maxBytes = config.bodyLimitBytes,
+): Promise<T> {
   const chunks: Buffer[] = [];
+  let size = 0;
   for await (const chunk of req) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    const buf = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+    size += buf.length;
+    if (size > maxBytes) {
+      throw new JsonBodyError("Request body too large", HTTP_STATUS.PAYLOAD_TOO_LARGE);
+    }
+    chunks.push(buf);
   }
   const raw = Buffer.concat(chunks).toString("utf8").trim();
   if (!raw) {
@@ -29,9 +41,12 @@ export async function readJson<T = unknown>(req: IncomingMessage): Promise<T> {
 }
 
 export class JsonBodyError extends Error {
-  constructor(message: string) {
+  readonly status: number;
+
+  constructor(message: string, status: number = HTTP_STATUS.BAD_REQUEST) {
     super(message);
     this.name = "JsonBodyError";
+    this.status = status;
   }
 }
 
