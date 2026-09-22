@@ -1,6 +1,6 @@
 {
   "name": "@malyuga/aether-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Scaffold plain TypeScript HTTP backends on node:http with zero runtime dependencies; OpenAPI-to-CRUD and explicit composition wiring",
   "keywords": [
     "aether",
