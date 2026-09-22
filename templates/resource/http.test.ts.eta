@@ -1,0 +1,68 @@
+<% const basePath = it.routePrefix ? it.routePrefix + "/" + it.resourceKebab : "/" + it.resourceKebab; %>
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { healthRoutes } from "../src/health/health.routes";
+import { create<%= it.entityPascal %>Module } from "../src/<%= it.resourceKebab %>/<%= it.resourceKebab %>.module";
+import { createFake<%= it.entityPascal %>Repository } from "./<%= it.resourceKebab %>.repository.fake";
+import { withHttpServer } from "./helpers/with-http-server";
+
+<% if (it.fields.length === 0) { %>
+const createBody = {};
+<% } else { %>
+const createBody = {
+<% it.fields.forEach(function(field, i) { %>
+  <%= field.name %>: <% if (field.tsType === "string") { %><%= field.required ? '"test"' : '"optional"' %><% } else if (field.tsType === "number") { %><%= field.required ? "1" : "2" %><% } else { %><%= field.required ? "true" : "false" %><% } %><%= i < it.fields.length - 1 ? "," : "" %>
+<% }); %>
+};
+<% } %>
+
+function appRoutesWithFakeRepository() {
+  const repository = createFake<%= it.entityPascal %>Repository();
+  const mod = create<%= it.entityPascal %>Module({ repository });
+  return [...healthRoutes, ...mod.routes];
+}
+
+describe("<%= it.resourceKebab %> HTTP", () => {
+  it("CRUD smoke over HTTP with fake repository", async () => {
+    await withHttpServer(appRoutesWithFakeRepository(), async (baseUrl) => {
+      const collection = `${baseUrl}<%= basePath %>`;
+
+      const createdRes = await fetch(collection, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(createBody),
+      });
+      assert.equal(createdRes.status, 201);
+      const created = (await createdRes.json()) as { id: string };
+      assert.ok(created.id);
+
+      const listRes = await fetch(collection);
+      assert.equal(listRes.status, 200);
+      const list = (await listRes.json()) as unknown[];
+      assert.ok(Array.isArray(list));
+      assert.ok(list.length >= 1);
+
+      const getRes = await fetch(`${collection}/${created.id}`);
+      assert.equal(getRes.status, 200);
+
+<% if (it.fields.length > 0) { %>
+<% const patchField = it.fields[0]; %>
+      const patchBody = {
+        <%= patchField.name %>: <%= patchField.tsType === "string" ? '"updated"' : patchField.tsType === "number" ? "99" : "false" %>,
+      };
+      const patchRes = await fetch(`${collection}/${created.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patchBody),
+      });
+      assert.equal(patchRes.status, 200);
+
+<% } %>
+      const deleteRes = await fetch(`${collection}/${created.id}`, { method: "DELETE" });
+      assert.equal(deleteRes.status, 204);
+
+      const missingRes = await fetch(`${collection}/${created.id}`);
+      assert.equal(missingRes.status, 404);
+    });
+  });
+});

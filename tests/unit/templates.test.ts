@@ -13,6 +13,7 @@ describe("templates", () => {
     expect(pkg.type).toBeUndefined();
     expect(pkg.scripts?.dev).toBe("tsx watch src/main.ts");
     expect(pkg.scripts?.build).toBe("tsc");
+    expect(pkg.scripts?.test).toBe("node --import tsx --test tests/**/*.test.ts");
   });
 
   it("R-init-05: init main.ts handles graceful shutdown", async () => {
@@ -35,6 +36,7 @@ describe("templates", () => {
       projectName: "demo",
     });
     expect(requestLogger).toContain("logger.info");
+    expect(requestLogger).toContain("requestId");
   });
 
   it("R-init-07: init app catches request errors", async () => {
@@ -42,6 +44,46 @@ describe("templates", () => {
     expect(app).toContain("handleRequestError");
     expect(app).toContain("catch (err)");
     expect(app).toContain("buildAppRoutes");
+  });
+
+  it("R-init-18: init includes health HTTP smoke helper and createApp route override", async () => {
+    const app = await renderTemplate("init/src-app.ts.eta", { projectName: "demo" });
+    expect(app).toContain("CreateAppOptions");
+    expect(app).toContain("options?.routes ?? buildAppRoutes()");
+
+    const healthTest = await renderTemplate("init/tests/health.http.test.ts.eta", {
+      projectName: "demo",
+    });
+    expect(healthTest).toContain("withHttpServer");
+    expect(healthTest).toContain("/health");
+
+    const helper = await renderTemplate("init/tests/helpers/with-http-server.ts.eta", {
+      projectName: "demo",
+    });
+    expect(helper).toContain("listen(0, \"127.0.0.1\")");
+  });
+
+  it("R-middleware-05: request-id recipe template", async () => {
+    const src = await renderTemplate("middleware/request-id.ts.eta", {
+      name: "request-id",
+      exportName: "requestIdMiddleware",
+    });
+    expect(src).toContain("randomUUID");
+    expect(src).not.toContain("TODO");
+  });
+
+  it("R-resource-05: crud tests include HTTP smoke template", async () => {
+    const ctx = {
+      resourceKebab: "users",
+      resourceCamel: "users",
+      entityPascal: "User",
+      crud: true,
+      fields: [],
+      routePrefix: "",
+    };
+    const http = await renderTemplate("resource/http.test.ts.eta", ctx);
+    expect(http).toContain("withHttpServer");
+    expect(http).toContain("createFakeUserRepository");
   });
 
   it("R-init-04: init tsconfig uses NodeNext and types node", async () => {

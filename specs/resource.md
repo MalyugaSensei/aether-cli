@@ -18,7 +18,7 @@
 - `src/<name>/<name>.controller.ts`
 - `src/<name>/<name>.routes.ts`
 - `src/<name>/<name>.module.ts`
-- With `--tests` and `--crud`: `tests/<name>.repository.fake.ts`, `tests/<name>.module.test.ts`
+- With `--tests` and `--crud`: `tests/<name>.repository.fake.ts`, `tests/<name>.module.test.ts`, `tests/<name>.http.test.ts`
 
 ## Modified files
 
@@ -35,6 +35,8 @@
 - R-resource-02: routes are wired into `src/app/composition.ts` automatically.
 - R-resource-03: a second run does not duplicate import or route registration.
 - R-resource-04: on an existing CRUD resource, `g resource <name> --tests` creates test files only; rejects non-CRUD resources.
+- R-resource-05: with `--crud --tests`, creates `tests/<name>.http.test.ts` in addition to fake repository and module unit test files.
+- R-resource-06: HTTP smoke wires a fake repository via `create<Entity>Module({ repository: ... })` and `createApp({ routes })` only; does not modify `src/app/composition.ts`. Exercises create → list → get → delete over HTTP; includes PATCH only when the resource has at least one updatable field (OpenAPI-derived fields).
 
 ## Out of scope
 

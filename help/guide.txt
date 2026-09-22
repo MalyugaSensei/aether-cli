@@ -24,12 +24,13 @@
     init          HTTP server, router, composition, config from env,
                   structured logging, request logger, error handler,
                   health check, CORS, body limit, optional bearer auth,
-                  list query helper (limit/offset)
+                  list query helper (limit/offset), npm test health smoke
 
     resource      types → validate → repository → service →
                   controller → routes → module (wired in composition)
 
-    middleware    passthrough stub; optional global registration
+    middleware    passthrough stub; recipe request-id (X-Request-Id + logs);
+                  optional --global registration in src/app.ts
 
     openapi       OpenAPI 3.0 JSON/YAML → CRUD resources (batch).
                   Re-run syncs types + validate; --force rewrites the module
@@ -51,12 +52,15 @@
             --crud              Full CRUD stack + validate layer
             --singular <name>     Entity name (default from resource name)
             --tests             With --crud on create; on existing CRUD,
-                                adds tests/ only (fake repo + smoke test)
+                                adds tests/ only (fake repo, module unit,
+                                HTTP CRUD smoke; does not wire composition)
             -f, --force         Overwrite generated files
             --dry-run
 
         g middleware <name> [options]
-            --global            Append to global chain in src/app.ts
+            request-id          Ready-made correlation ID middleware
+            --global            Register in src/app.ts (request-id before
+                                request logger; other names append to end)
             --dry-run           Without --global: file only, you wire routes
 
         g openapi <spec> [options]
@@ -96,6 +100,12 @@
 
     CRUD + tests in one step
       aether g resource orders --crud --tests
+
+    Request correlation ID in logs
+      aether g middleware request-id --global
+
+    Run generated HTTP smoke tests
+      npm test
 
     Add tests after the fact
       aether g resource orders --tests

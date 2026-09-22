@@ -34,6 +34,8 @@
 - `src/app/middleware/body-limit.ts`
 - `src/app/middleware/bearer-auth.ts`
 - `src/health/health.routes.ts`
+- `tests/helpers/with-http-server.ts`
+- `tests/health.http.test.ts`
 
 ## Modified files
 
@@ -47,7 +49,7 @@
 ## Acceptance criteria
 
 - R-init-01: creates the full set of files for a basic HTTP service.
-- R-init-02: `package.json` is CommonJS (no `"type": "module"`), no runtime `dependencies`; devDependencies: TypeScript ^7, `@types/node` ^24 (major matches Node major), `tsx`; scripts `build` / `start` / `dev` (`tsx watch`); optional `engines.node >= 24`.
+- R-init-02: `package.json` is CommonJS (no `"type": "module"`), no runtime `dependencies`; devDependencies: TypeScript ^7, `@types/node` ^24 (major matches Node major), `tsx`; scripts `build` / `start` / `dev` (`tsx watch`) / `test` (`node --import tsx --test` over `tests/**/*.test.ts`); optional `engines.node >= 24`.
 - R-init-04: `tsconfig.json` — `module` + `moduleResolution` = `NodeNext`, `types: ["node"]`; local imports in `src/` without file extensions.
 - R-init-03: without `--force`, refuses a non-empty directory (presence of `src/app.ts` or `package.json`).
 - R-init-05: `src/main.ts` — on `SIGINT` / `SIGTERM` stops accepting new connections (`server.close()`), waits up to `config.shutdownGraceMs` (default 10 s) for in-flight requests, then forcibly closes remaining connections (`server.closeAllConnections()`); process exits with code `0` on successful close.
@@ -63,6 +65,7 @@
 - R-init-15: `src/app/list.ts` exports `ListQuery` and `parseListQuery`; defaults `limit=50`, `offset=0`; `limit` must be 1..100.
 - R-init-16: `aether init --dry-run` exits 0 and does not write scaffold files to the target directory.
 - R-init-17: `src/app/http.ts` exports `HTTP_STATUS`, `HTTP_METHOD` (`GET` | `POST` | `PUT` | `PATCH` | `DELETE` | `OPTIONS`), and `HTTP_CONTENT_TYPE`; init scaffold (health routes, CORS, bearer, body-limit, router default method) uses these constants instead of raw method/status literals; CORS preflight responds with `HTTP_STATUS.NO_CONTENT`.
+- R-init-18: `src/app.ts` exports `createApp(options?: { routes?: Route[] })`; when `routes` is omitted, uses `buildAppRoutes()` as today. After `init`, `tests/health.http.test.ts` starts an in-process server on port `0`, uses native `fetch`, and asserts `GET /health` → 200 with `{ status: "ok" }`. `npm test` exits 0 in a fresh scaffold after `npm install`.
 
 ## Out of scope
 

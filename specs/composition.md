@@ -24,6 +24,7 @@ Generated apps wire HTTP resources through an explicit composition root. No DI c
 - R-composition-01: `g resource users --crud` registers `createUsersModule({})` routes without duplicate imports on repeat (repeat fails on existing dir, not duplicate wiring).
 - R-composition-02: CRUD endpoints return 501 until user passes a repository implementation into the module factory call.
 - R-composition-03: wiring changes only `composition.ts`, not scattered singleton imports in service/controller.
+- HTTP smoke tests (R-resource-06) must not inject a test repository into `composition.ts`; production wiring stays `create<Entity>Module({})` until the user passes a repository.
 
 ## Out of scope
 

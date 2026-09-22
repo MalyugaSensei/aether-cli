@@ -4,7 +4,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/main.js",
-    "dev": "tsx watch src/main.ts"
+    "dev": "tsx watch src/main.ts",
+    "test": "node --import tsx --test tests/**/*.test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.13.5",

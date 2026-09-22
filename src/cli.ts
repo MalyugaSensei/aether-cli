@@ -96,7 +96,7 @@ generate
 
 generate
   .command("middleware <name>")
-  .description("Generate middleware")
+  .description("Generate middleware (named recipe: request-id; other names are stubs)")
   .option("--global", `Register in ${DEFAULT_APP_ENTRY} global middleware chain`)
   .option("-f, --force", "Overwrite existing middleware file")
   .option("--dry-run", "Print planned changes without writing")

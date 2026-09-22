@@ -1,5 +1,9 @@
 import { relative } from "node:path";
-import { addNamedImportIfMissing, appendToArrayLiteralIfMissing } from "../core/ast.js";
+import {
+  addNamedImportIfMissing,
+  appendToArrayLiteralIfMissing,
+  insertIntoArrayLiteralBeforeIfMissing,
+} from "../core/ast.js";
 import type { FileOp } from "../core/plan.js";
 import { pathExists } from "../core/plan.js";
 import {
@@ -11,7 +15,14 @@ import {
   middlewareFileName,
   validateResourceName,
 } from "../core/naming.js";
-import { AST_SYMBOL, FILE_OP, GENERATOR, TEMPLATE } from "../core/constants.js";
+import {
+  AST_SYMBOL,
+  FILE_OP,
+  GENERATOR,
+  MIDDLEWARE_RECIPE,
+  MIDDLEWARE_SCAFFOLD_SYMBOL,
+  TEMPLATE,
+} from "../core/constants.js";
 import { renderTemplate } from "../core/render.js";
 import type { ProjectContext } from "../core/project.js";
 import type { Generator } from "./types.js";
@@ -34,7 +45,9 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
       throw new Error(`Middleware already exists: ${relPath}. Use --force to overwrite.`);
     }
 
-    const contents = await renderTemplate(TEMPLATE.middleware, {
+    const templateKey =
+      kebab === MIDDLEWARE_RECIPE.requestId ? TEMPLATE.middlewareRequestId : TEMPLATE.middleware;
+    const contents = await renderTemplate(templateKey, {
       name: kebab,
       exportName,
     });
@@ -50,7 +63,16 @@ export const middlewareGenerator: Generator<MiddlewareOptions> = {
         path: appRel,
         edit(sf) {
           addNamedImportIfMissing(sf, importPath, [exportName]);
-          appendToArrayLiteralIfMissing(sf, AST_SYMBOL.middlewareArray, exportName, false);
+          if (kebab === MIDDLEWARE_RECIPE.requestId) {
+            insertIntoArrayLiteralBeforeIfMissing(
+              sf,
+              AST_SYMBOL.middlewareArray,
+              MIDDLEWARE_SCAFFOLD_SYMBOL.requestLogger,
+              exportName,
+            );
+          } else {
+            appendToArrayLiteralIfMissing(sf, AST_SYMBOL.middlewareArray, exportName, false);
+          }
         },
       });
     }

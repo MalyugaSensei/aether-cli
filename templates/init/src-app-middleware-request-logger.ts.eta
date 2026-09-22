@@ -3,6 +3,13 @@ import { HTTP_METHOD } from "../http";
 import { logger } from "../logger";
 
 export const requestLogger: Middleware = async (req, _res, next) => {
-  logger.info(`${req.method ?? HTTP_METHOD.GET} ${req.url ?? "/"}`);
+  const rawId = req.headers["x-request-id"];
+  const requestId = typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : undefined;
+  const message = `${req.method ?? HTTP_METHOD.GET} ${req.url ?? "/"}`;
+  if (requestId) {
+    logger.info(message, { requestId });
+  } else {
+    logger.info(message);
+  }
   await next();
 };

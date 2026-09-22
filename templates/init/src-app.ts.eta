@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createRouter, type Route } from "./app/router";
+export type { Route } from "./app/router";
 import type { Middleware } from "./app/middleware/types";
 import { buildAppRoutes } from "./app/composition";
 import { handleRequestError } from "./app/middleware/error-handler";
@@ -9,12 +10,16 @@ import { bodyLimit } from "./app/middleware/body-limit";
 import { bearerAuth } from "./app/middleware/bearer-auth";
 
 const middleware: Middleware[] = [cors, bodyLimit, requestLogger, bearerAuth];
-const routes: Route[] = buildAppRoutes();
 
-export function createApp(): (
+export type CreateAppOptions = {
+  routes?: Route[];
+};
+
+export function createApp(options?: CreateAppOptions): (
   req: IncomingMessage,
   res: ServerResponse,
 ) => void | Promise<void> {
+  const routes = options?.routes ?? buildAppRoutes();
   const router = createRouter(routes);
 
   return async (req, res) => {

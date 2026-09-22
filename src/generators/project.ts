@@ -24,6 +24,7 @@ import {
   MIDDLEWARE_DIR,
   MIDDLEWARE_SCAFFOLD,
   PACKAGE_JSON,
+  TESTS_DIR,
   TSCONFIG_JSON,
 } from "../core/constants.js";
 
@@ -76,6 +77,14 @@ const INIT_FILES: Array<{ rel: string; template: string }> = [
   {
     rel: `${DEFAULT_SRC_DIR}/${HEALTH_DIR}/${HEALTH_ROUTES_BASENAME}`,
     template: INIT_TEMPLATE.healthRoutes,
+  },
+  {
+    rel: `${TESTS_DIR}/helpers/with-http-server.ts`,
+    template: INIT_TEMPLATE.testWithHttpServer,
+  },
+  {
+    rel: `${TESTS_DIR}/health.http.test.ts`,
+    template: INIT_TEMPLATE.testHealthHttp,
   },
 ];
 

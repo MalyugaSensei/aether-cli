@@ -1,0 +1,21 @@
+import { randomUUID } from "node:crypto";
+import type { Middleware } from "./types";
+
+const REQUEST_ID_HEADER = "x-request-id";
+
+function readIncomingRequestId(req: import("node:http").IncomingMessage): string | undefined {
+  const raw = req.headers[REQUEST_ID_HEADER];
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+export const <%= it.exportName %>: Middleware = async (req, res, next) => {
+  const requestId = readIncomingRequestId(req) ?? randomUUID();
+  req.headers[REQUEST_ID_HEADER] = requestId;
+  res.setHeader("X-Request-Id", requestId);
+  await next();
+};

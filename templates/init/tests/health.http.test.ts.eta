@@ -1,0 +1,13 @@
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { withHttpServer } from "./helpers/with-http-server";
+
+describe("health HTTP", () => {
+  it("GET /health returns ok", async () => {
+    await withHttpServer(undefined, async (baseUrl) => {
+      const res = await fetch(`${baseUrl}/health`);
+      assert.equal(res.status, 200);
+      assert.deepEqual(await res.json(), { status: "ok" });
+    });
+  });
+});

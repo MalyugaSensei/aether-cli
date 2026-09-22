@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
@@ -66,12 +67,25 @@ describe("integration: init + crud resource", () => {
   });
 
   it("R-resource-04: --tests on existing CRUD adds tests/ only", async () => {
+    const compBefore = readFileSync(join(dir, "src/app/composition.ts"), "utf8");
     const r = await runChisel(["g", "resource", "users", "--tests"], dir);
     expect(r.code).toBe(0);
     const fake = join(dir, "tests/users.repository.fake.ts");
     const modTest = join(dir, "tests/users.module.test.ts");
+    const httpTest = join(dir, "tests/users.http.test.ts");
     expect(existsSync(fake)).toBe(true);
     expect(existsSync(modTest)).toBe(true);
+    expect(existsSync(httpTest)).toBe(true);
+    expect(readFileSync(join(dir, "src/app/composition.ts"), "utf8")).toBe(compBefore);
+  });
+
+  it("R-resource-06: HTTP smoke passes without composition wiring", async () => {
+    execSync("npm install", { cwd: dir, stdio: "pipe" });
+    execSync("npm test", { cwd: dir, stdio: "pipe" });
+    const http = readFileSync(join(dir, "tests/users.http.test.ts"), "utf8");
+    expect(http).toContain("withHttpServer(appRoutesWithFakeRepository()");
+    expect(http).toContain("createFakeUserRepository");
+    expect(http).not.toContain("composition.ts");
   });
 
   it("TypeScript program has no diagnostics", () => {

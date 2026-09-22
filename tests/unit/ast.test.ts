@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { Project } from "ts-morph";
-import { addNamedImportIfMissing, appendModuleRoutesSpreadIfMissing, appendToArrayLiteralIfMissing } from "../../src/core/ast.js";
+import {
+  addNamedImportIfMissing,
+  appendModuleRoutesSpreadIfMissing,
+  appendToArrayLiteralIfMissing,
+  insertIntoArrayLiteralBeforeIfMissing,
+} from "../../src/core/ast.js";
 
 const sampleApp = `import { healthRoutes } from "./health/health.routes";
 
@@ -16,6 +21,16 @@ describe("ast", () => {
     addNamedImportIfMissing(sf, "./app/middleware/auth", ["authMiddleware"]);
     const imports = sf.getImportDeclarations().filter((d) => d.getModuleSpecifierValue().includes("auth"));
     expect(imports).toHaveLength(1);
+  });
+
+  it("R-middleware-06: insertIntoArrayLiteralBeforeIfMissing is idempotent", () => {
+    const project = new Project({ useInMemoryFileSystem: true });
+    const sf = project.createSourceFile("app.ts", sampleApp);
+    insertIntoArrayLiteralBeforeIfMissing(sf, "middleware", "requestLogger", "requestIdMiddleware");
+    insertIntoArrayLiteralBeforeIfMissing(sf, "middleware", "requestLogger", "requestIdMiddleware");
+    const text = sf.getFullText();
+    expect(text.match(/requestIdMiddleware/g)?.length).toBe(1);
+    expect(text.indexOf("requestIdMiddleware")).toBeLessThan(text.indexOf("requestLogger"));
   });
 
   it("R-resource-03: appendModuleRoutesSpreadIfMissing does not duplicate spread", () => {

@@ -21,4 +21,6 @@ export const INIT_SCAFFOLD_FILES = [
   "src/app/middleware/body-limit.ts",
   "src/app/middleware/bearer-auth.ts",
   "src/health/health.routes.ts",
+  "tests/helpers/with-http-server.ts",
+  "tests/health.http.test.ts",
 ] as const;

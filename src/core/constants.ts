@@ -88,6 +88,8 @@ export const INIT_TEMPLATE = {
   middlewareBodyLimit: `${TEMPLATE_INIT_DIR}/src-app-middleware-body-limit.ts.eta`,
   middlewareBearerAuth: `${TEMPLATE_INIT_DIR}/src-app-middleware-bearer-auth.ts.eta`,
   healthRoutes: `${TEMPLATE_INIT_DIR}/src-health-health.routes.ts.eta`,
+  testWithHttpServer: `${TEMPLATE_INIT_DIR}/tests/helpers/with-http-server.ts.eta`,
+  testHealthHttp: `${TEMPLATE_INIT_DIR}/tests/health.http.test.ts.eta`,
 } as const;
 
 export const APP_SCAFFOLD = {
@@ -113,6 +115,15 @@ export const HEALTH_ROUTES_BASENAME = "health.routes.ts";
 export const RESOURCE_TEST_SUFFIX = {
   repositoryFake: "repository.fake",
   moduleTest: "module.test",
+  httpTest: "http.test",
+} as const;
+
+export const MIDDLEWARE_RECIPE = {
+  requestId: "request-id",
+} as const;
+
+export const MIDDLEWARE_SCAFFOLD_SYMBOL = {
+  requestLogger: "requestLogger",
 } as const;
 
 export const FILE_OP = {
@@ -162,8 +173,10 @@ export const RESOURCE_TEMPLATE: Record<ResourceLayer, string> = {
 
 export const TEMPLATE = {
   middleware: "middleware/middleware.ts.eta",
+  middlewareRequestId: "middleware/request-id.ts.eta",
   resourceTestsFake: "resource/repository.fake.ts.eta",
   resourceTestsModule: "resource/module.test.ts.eta",
+  resourceTestsHttp: "resource/http.test.ts.eta",
 } as const;
 
 export const AST_SYMBOL = {

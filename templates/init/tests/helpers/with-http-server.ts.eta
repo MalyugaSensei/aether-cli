@@ -1,0 +1,34 @@
+import { createServer, type Server } from "node:http";
+import { once } from "node:events";
+import { createApp } from "../../src/app";
+import type { Route } from "../../src/app/router";
+
+export type HttpServerFixture = {
+  baseUrl: string;
+  close: () => Promise<void>;
+};
+
+export async function withHttpServer(
+  routes?: Route[],
+  run?: (baseUrl: string) => void | Promise<void>,
+): Promise<void> {
+  const listener = createApp(routes !== undefined ? { routes } : undefined);
+  const server: Server = createServer(listener);
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const addr = server.address();
+  if (!addr || typeof addr === "string") {
+    server.close();
+    throw new Error("Expected TCP address");
+  }
+  const baseUrl = `http://127.0.0.1:${addr.port}`;
+  try {
+    if (run) {
+      await run(baseUrl);
+    }
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => (err ? reject(err) : resolve()));
+    });
+  }
+}

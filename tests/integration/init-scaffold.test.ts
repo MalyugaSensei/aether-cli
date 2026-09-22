@@ -1,4 +1,5 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -15,6 +16,21 @@ describe("integration: init scaffold", () => {
         expect(existsSync(join(dir, rel)), `missing ${rel}`).toBe(true);
       }
       expect(existsSync(join(dir, ".env"))).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("R-init-18: npm test runs health HTTP smoke", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "chisel-init-18-"));
+    try {
+      expect((await runChisel(["init"], dir)).code).toBe(0);
+      const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
+        scripts?: { test?: string };
+      };
+      expect(pkg.scripts?.test).toContain("node --import tsx --test");
+      execSync("npm install", { cwd: dir, stdio: "pipe" });
+      execSync("npm test", { cwd: dir, stdio: "pipe" });
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

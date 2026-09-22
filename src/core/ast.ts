@@ -88,6 +88,34 @@ export function appendToArrayLiteralIfMissing(
   }
 }
 
+/** Insert identifier before `beforeIdentifier` in `const <arrayName> = [...]` if not already present. */
+export function insertIntoArrayLiteralBeforeIfMissing(
+  sf: SourceFile,
+  arrayVariableName: string,
+  beforeIdentifier: string,
+  elementIdentifier: string,
+): void {
+  const arr = findVariableArrayLiteral(sf, arrayVariableName);
+  if (!arr) {
+    throw new Error(
+      `Could not find array variable "${arrayVariableName}" in ${sf.getFilePath()}`,
+    );
+  }
+  if (arrayContainsIdentifier(arr, elementIdentifier)) {
+    return;
+  }
+  const elements = arr.getElements();
+  const beforeIndex = elements.findIndex(
+    (el) => el.isKind(SyntaxKind.Identifier) && el.getText() === beforeIdentifier,
+  );
+  if (beforeIndex === -1) {
+    throw new Error(
+      `Could not find element "${beforeIdentifier}" in array "${arrayVariableName}" in ${sf.getFilePath()}`,
+    );
+  }
+  arr.insertElement(beforeIndex, elementIdentifier);
+}
+
 function findBuildAppRoutesReturnArray(
   sf: SourceFile,
 ): import("ts-morph").ArrayLiteralExpression | undefined {

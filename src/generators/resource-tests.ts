@@ -16,8 +16,11 @@ export async function planResourceTests(
   const contents = await renderTemplate(TEMPLATE.resourceTestsFake, ctx);
   const testRel = join(TESTS_DIR, `${ctx.resourceKebab}.${RESOURCE_TEST_SUFFIX.moduleTest}.ts`);
   const testContents = await renderTemplate(TEMPLATE.resourceTestsModule, ctx);
+  const httpRel = join(TESTS_DIR, `${ctx.resourceKebab}.${RESOURCE_TEST_SUFFIX.httpTest}.ts`);
+  const httpContents = await renderTemplate(TEMPLATE.resourceTestsHttp, ctx);
   return [
     { kind: FILE_OP.create, path: rel, contents },
     { kind: FILE_OP.create, path: testRel, contents: testContents },
+    { kind: FILE_OP.create, path: httpRel, contents: httpContents },
   ];
 }
